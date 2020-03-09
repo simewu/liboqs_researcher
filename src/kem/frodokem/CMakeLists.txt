@@ -1,3 +1,4 @@
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function -Wno-unused-parameter")
 if(OQS_ENABLE_KEM_frodokem_640_aes)
     set(SRCS kem_frodokem640aes.c external/frodo640aes.c)
 endif()

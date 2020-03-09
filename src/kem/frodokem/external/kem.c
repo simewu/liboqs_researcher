@@ -27,21 +27,28 @@ int crypto_kem_keypair(unsigned char* pk, unsigned char* sk)
 
     // Generate the secret value s, the seed for S and E, and the seed for the seed for A. Add seed_A to the public key
     randombytes(randomness, CRYPTO_BYTES + CRYPTO_BYTES + BYTES_SEED_A);
+    OQS_print_hex_string("randomness", randomness, CRYPTO_BYTES + CRYPTO_BYTES + BYTES_SEED_A);
     shake(pk_seedA, BYTES_SEED_A, randomness_z, BYTES_SEED_A);
+    OQS_print_hex_string("seedA", pk_seedA, BYTES_SEED_A);
 
     // Generate S and E, and compute B = A*S + E. Generate A on-the-fly
     shake_input_seedSE[0] = 0x5F;
     memcpy(&shake_input_seedSE[1], randomness_seedSE, CRYPTO_BYTES);
     shake((uint8_t*)S, 2*PARAMS_N*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSE, 1 + CRYPTO_BYTES);
+    OQS_print_hex_string("r", (uint8_t*)S, 2 * PARAMS_N * PARAMS_NBAR * sizeof(uint16_t));
     for (size_t i = 0; i < 2 * PARAMS_N * PARAMS_NBAR; i++) {
         S[i] = LE_TO_UINT16(S[i]);
     }
     frodo_sample_n(S, PARAMS_N*PARAMS_NBAR);
+    OQS_print_int_matrix("S", (int16_t *) S, PARAMS_N, PARAMS_NBAR);
     frodo_sample_n(E, PARAMS_N*PARAMS_NBAR);
+    OQS_print_uint_matrix("E", E, PARAMS_N, PARAMS_NBAR);
     frodo_mul_add_as_plus_e(B, S, E, pk);
+    OQS_print_int_matrix("B", (int16_t *) B, PARAMS_N, PARAMS_NBAR);
 
     // Encode the second part of the public key
     frodo_pack(pk_b, CRYPTO_PUBLICKEYBYTES - BYTES_SEED_A, B, PARAMS_N*PARAMS_NBAR, PARAMS_LOGQ);
+    OQS_print_hex_string("b", pk_b, CRYPTO_PUBLICKEYBYTES - BYTES_SEED_A);
 
     // Add s, pk and S to the secret key
     memcpy(sk_s, randomness_s, CRYPTO_BYTES);
@@ -53,6 +60,7 @@ int crypto_kem_keypair(unsigned char* pk, unsigned char* sk)
 
     // Add H(pk) to the secret key
     shake(sk_pkh, BYTES_PKHASH, pk, CRYPTO_PUBLICKEYBYTES);
+    OQS_print_hex_string("pkh", sk_pkh, BYTES_PKHASH);
 
     // Cleanup:
     clear_bytes((uint8_t *)S, PARAMS_N*PARAMS_NBAR*sizeof(uint16_t));
@@ -90,29 +98,44 @@ int crypto_kem_enc(unsigned char *ct, unsigned char *ss, const unsigned char *pk
     // pkh <- G_1(pk), generate random mu, compute (seedSE || k) = G_2(pkh || mu)
     shake(pkh, BYTES_PKHASH, pk, CRYPTO_PUBLICKEYBYTES);
     randombytes(mu, BYTES_MU);
+    OQS_print_hex_string("mu", mu, BYTES_MU);
     shake(G2out, CRYPTO_BYTES + CRYPTO_BYTES, G2in, BYTES_PKHASH + BYTES_MU);
+    OQS_print_hex_string("pkh", pkh, BYTES_PKHASH);
+    OQS_print_hex_string("seedSE", seedSE, CRYPTO_BYTES);
+    OQS_print_hex_string("k", k, CRYPTO_BYTES);
 
     // Generate Sp and Ep, and compute Bp = Sp*A + Ep. Generate A on-the-fly
     shake_input_seedSE[0] = 0x96;
     memcpy(&shake_input_seedSE[1], seedSE, CRYPTO_BYTES);
     shake((uint8_t*)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSE, 1 + CRYPTO_BYTES);
+    OQS_print_hex_string("r", (uint8_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t));
     for (size_t i = 0; i < (2 * PARAMS_N + PARAMS_NBAR) * PARAMS_NBAR; i++) {
         Sp[i] = LE_TO_UINT16(Sp[i]);
     }
     frodo_sample_n(Sp, PARAMS_N*PARAMS_NBAR);
+    OQS_print_int_matrix("S'", (int16_t *)Sp, PARAMS_NBAR, PARAMS_N);
     frodo_sample_n(Ep, PARAMS_N*PARAMS_NBAR);
+    OQS_print_int_matrix("E'", (int16_t *)Ep, PARAMS_NBAR, PARAMS_N);
     frodo_mul_add_sa_plus_e(Bp, Sp, Ep, pk_seedA);
+    OQS_print_int_matrix("B'", (int16_t *)Bp, PARAMS_NBAR, PARAMS_N);
     frodo_pack(ct_c1, (PARAMS_LOGQ*PARAMS_N*PARAMS_NBAR)/8, Bp, PARAMS_N*PARAMS_NBAR, PARAMS_LOGQ);
+    OQS_print_hex_string("c1", ct_c1, (PARAMS_LOGQ*PARAMS_N*PARAMS_NBAR)/8);
 
     // Generate Epp, and compute V = Sp*B + Epp
     frodo_sample_n(Epp, PARAMS_NBAR*PARAMS_NBAR);
+    OQS_print_int_matrix("E''", (int16_t *)Epp, PARAMS_NBAR, PARAMS_NBAR);
     frodo_unpack(B, PARAMS_N*PARAMS_NBAR, pk_b, CRYPTO_PUBLICKEYBYTES - BYTES_SEED_A, PARAMS_LOGQ);
+    OQS_print_int_matrix("B", (int16_t *)B, PARAMS_N, PARAMS_NBAR);
     frodo_mul_add_sb_plus_e(V, B, Sp, Epp);
+    OQS_print_int_matrix("V", (int16_t *)V, PARAMS_NBAR, PARAMS_NBAR);
 
     // Encode mu, and compute C = V + enc(mu) (mod q)
     frodo_key_encode(C, (uint16_t*)mu);
+    OQS_print_int_matrix("mu_encoded", (int16_t *)C, PARAMS_NBAR, PARAMS_NBAR);
     frodo_add(C, V, C);
+    OQS_print_int_matrix("C", (int16_t *)C, PARAMS_NBAR, PARAMS_NBAR);
     frodo_pack(ct_c2, (PARAMS_LOGQ*PARAMS_NBAR*PARAMS_NBAR)/8, C, PARAMS_NBAR*PARAMS_NBAR, PARAMS_LOGQ);
+    OQS_print_hex_string("c2", ct_c2, (PARAMS_LOGQ*PARAMS_NBAR*PARAMS_NBAR)/8);
 
     // Compute ss = F(ct||KK)
     memcpy(Fin_ct, ct, CRYPTO_CIPHERTEXTBYTES);
@@ -166,37 +189,60 @@ int crypto_kem_dec(unsigned char *ss, const unsigned char *ct, const unsigned ch
     for (size_t i = 0; i < PARAMS_N * PARAMS_NBAR; i++) {
         S[i] = LE_TO_UINT16(sk_S[i]);
     }
+    
+    OQS_print_hex_string("c1", ct_c1, (PARAMS_LOGQ*PARAMS_N*PARAMS_NBAR)/8);
+    OQS_print_hex_string("c2", ct_c2, (PARAMS_LOGQ*PARAMS_NBAR*PARAMS_NBAR)/8);
+    OQS_print_hex_string("s", sk_s, CRYPTO_BYTES);
+    OQS_print_hex_string("seedA", pk_seedA, BYTES_SEED_A);
+    OQS_print_hex_string("b", pk_b, CRYPTO_PUBLICKEYBYTES - BYTES_SEED_A);
+    OQS_print_int_matrix("S", (int16_t *)S, PARAMS_N, PARAMS_NBAR);
+    OQS_print_hex_string("pkh", sk_pkh, BYTES_PKHASH);
 
     // Compute W = C - Bp*S (mod q), and decode the randomness mu
     frodo_unpack(Bp, PARAMS_N*PARAMS_NBAR, ct_c1, (PARAMS_LOGQ*PARAMS_N*PARAMS_NBAR)/8, PARAMS_LOGQ);
+    OQS_print_int_matrix("B'", (int16_t *)Bp, PARAMS_NBAR, PARAMS_N);
     frodo_unpack(C, PARAMS_NBAR*PARAMS_NBAR, ct_c2, (PARAMS_LOGQ*PARAMS_NBAR*PARAMS_NBAR)/8, PARAMS_LOGQ);
+    OQS_print_int_matrix("C", (int16_t *)C, PARAMS_NBAR, PARAMS_NBAR);
     frodo_mul_bs(W, Bp, S);
+    OQS_print_int_matrix("B'S", (int16_t *)W, PARAMS_NBAR, PARAMS_NBAR);
     frodo_sub(W, C, W);
+    OQS_print_int_matrix("M", (int16_t *)W, PARAMS_NBAR, PARAMS_NBAR);
     frodo_key_decode((uint16_t*)muprime, W);
+    OQS_print_hex_string("mu'", muprime, BYTES_MU);
 
     // Generate (seedSE' || k') = G_2(pkh || mu')
     memcpy(pkh, sk_pkh, BYTES_PKHASH);
     shake(G2out, CRYPTO_BYTES + CRYPTO_BYTES, G2in, BYTES_PKHASH + BYTES_MU);
+    OQS_print_hex_string("seedSE'", seedSEprime, CRYPTO_BYTES);
+    OQS_print_hex_string("k'", kprime, CRYPTO_BYTES);
 
     // Generate Sp and Ep, and compute BBp = Sp*A + Ep. Generate A on-the-fly
     shake_input_seedSEprime[0] = 0x96;
     memcpy(&shake_input_seedSEprime[1], seedSEprime, CRYPTO_BYTES);
     shake((uint8_t*)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSEprime, 1 + CRYPTO_BYTES);
+    OQS_print_hex_string("r", (uint8_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t));
     for (size_t i = 0; i < (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR; i++) {
         Sp[i] = LE_TO_UINT16(Sp[i]);
     }
     frodo_sample_n(Sp, PARAMS_N*PARAMS_NBAR);
+    OQS_print_int_matrix("S'", (int16_t *)Sp, PARAMS_NBAR, PARAMS_N);
     frodo_sample_n(Ep, PARAMS_N*PARAMS_NBAR);
+    OQS_print_int_matrix("E'", (int16_t *)Ep, PARAMS_NBAR, PARAMS_N);
     frodo_mul_add_sa_plus_e(BBp, Sp, Ep, pk_seedA);
+    OQS_print_int_matrix("B''", (int16_t *)BBp, PARAMS_NBAR, PARAMS_N);
 
     // Generate Epp, and compute W = Sp*B + Epp
     frodo_sample_n(Epp, PARAMS_NBAR*PARAMS_NBAR);
+    OQS_print_int_matrix("E''", (int16_t *)Epp, PARAMS_NBAR, PARAMS_NBAR);
     frodo_unpack(B, PARAMS_N*PARAMS_NBAR, pk_b, CRYPTO_PUBLICKEYBYTES - BYTES_SEED_A, PARAMS_LOGQ);
+    OQS_print_int_matrix("B", (int16_t *) B, PARAMS_N, PARAMS_NBAR);
     frodo_mul_add_sb_plus_e(W, B, Sp, Epp);
+    OQS_print_int_matrix("V", (int16_t *)W, PARAMS_NBAR, PARAMS_NBAR);
 
     // Encode mu, and compute CC = W + enc(mu') (mod q)
     frodo_key_encode(CC, (uint16_t*)muprime);
     frodo_add(CC, W, CC);
+    OQS_print_int_matrix("C'", (int16_t *)CC, PARAMS_NBAR, PARAMS_NBAR);
 
     // Prepare input to F
     memcpy(Fin_ct, ct, CRYPTO_CIPHERTEXTBYTES);
