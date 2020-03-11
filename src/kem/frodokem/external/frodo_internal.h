@@ -52,33 +52,33 @@ void frodo_key_decode(uint16_t *out, const uint16_t *in);
 
 #include <stdio.h>
 static void OQS_print_hex_string(const char *label, const uint8_t *str, size_t len) {
-    // printf("%s (%zu) = ", label, len);
-    // for (size_t i = 0; i < (len); i++) {
-    //     printf("%02X", ((unsigned char *) (str))[i]);
-    // }
-    // printf("\n");
+    printf("%s (%zu) = ", label, len);
+    for (size_t i = 0; i < (len); i++) {
+        printf("%02X", ((unsigned char *) (str))[i]);
+    }
+    printf("\n");
 }
 static void OQS_print_int_matrix(const char *label, const int16_t *x, size_t rows, size_t cols) {
-    // printf("%s (%zu x %zu) = ", label, rows, cols);
-    // for (size_t i = 0; i < rows; i++) {
-    //     for (size_t j = 0; j < cols; j++) {
-    //         if (x[i * cols + j] < 0) {
-    //             printf("%d,", x[i * cols + j] + PARAMS_Q);
-    //         } else {
-    //             printf("%d,", x[i * cols + j] % PARAMS_Q);
-    //         }
-    //     }
-    // }
-    // printf("\n");
+    printf("%s (%zu x %zu) = ", label, rows, cols);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            if (x[i * cols + j] < 0) {
+                printf("%d,", x[i * cols + j] + PARAMS_Q);
+            } else {
+                printf("%d,", x[i * cols + j] % PARAMS_Q);
+            }
+        }
+    }
+    printf("\n");
 }
 static void OQS_print_uint_matrix(const char *label, const uint16_t *x, size_t rows, size_t cols) {
-    // printf("%s (%zu x %zu) = ", label, rows, cols);
-    // for (size_t i = 0; i < rows; i++) {
-    //     for (size_t j = 0; j < cols; j++) {
-    //         printf("%d,", x[i * cols + j]);
-    //     }
-    // }
-    // printf("\n");
+    printf("%s (%zu x %zu) = ", label, rows, cols);
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            printf("%d,", x[i * cols + j]);
+        }
+    }
+    printf("\n");
 }
 
 #endif

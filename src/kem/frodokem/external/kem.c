@@ -42,7 +42,7 @@ int crypto_kem_keypair(unsigned char* pk, unsigned char* sk)
     frodo_sample_n(S, PARAMS_N*PARAMS_NBAR);
     OQS_print_int_matrix("S", (int16_t *) S, PARAMS_N, PARAMS_NBAR);
     frodo_sample_n(E, PARAMS_N*PARAMS_NBAR);
-    OQS_print_uint_matrix("E", E, PARAMS_N, PARAMS_NBAR);
+    // OQS_print_uint_matrix("E", E, PARAMS_N, PARAMS_NBAR);
     frodo_mul_add_as_plus_e(B, S, E, pk);
     OQS_print_int_matrix("B", (int16_t *) B, PARAMS_N, PARAMS_NBAR);
 
