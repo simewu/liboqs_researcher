@@ -35,14 +35,13 @@ int crypto_kem_keypair(unsigned char* pk, unsigned char* sk)
     shake_input_seedSE[0] = 0x5F;
     memcpy(&shake_input_seedSE[1], randomness_seedSE, CRYPTO_BYTES);
     shake((uint8_t*)S, 2*PARAMS_N*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSE, 1 + CRYPTO_BYTES);
-    OQS_print_hex_string("r", (uint8_t*)S, 2 * PARAMS_N * PARAMS_NBAR * sizeof(uint16_t));
+    OQS_print_int_matrix("r", (int16_t *)S, 2 * PARAMS_N * PARAMS_NBAR, 1);
     for (size_t i = 0; i < 2 * PARAMS_N * PARAMS_NBAR; i++) {
         S[i] = LE_TO_UINT16(S[i]);
     }
     frodo_sample_n(S, PARAMS_N*PARAMS_NBAR);
     OQS_print_int_matrix("S", (int16_t *) S, PARAMS_N, PARAMS_NBAR);
     frodo_sample_n(E, PARAMS_N*PARAMS_NBAR);
-    // OQS_print_uint_matrix("E", E, PARAMS_N, PARAMS_NBAR);
     frodo_mul_add_as_plus_e(B, S, E, pk);
     OQS_print_int_matrix("B", (int16_t *) B, PARAMS_N, PARAMS_NBAR);
 
@@ -108,7 +107,7 @@ int crypto_kem_enc(unsigned char *ct, unsigned char *ss, const unsigned char *pk
     shake_input_seedSE[0] = 0x96;
     memcpy(&shake_input_seedSE[1], seedSE, CRYPTO_BYTES);
     shake((uint8_t*)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSE, 1 + CRYPTO_BYTES);
-    OQS_print_hex_string("r", (uint8_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t));
+    OQS_print_int_matrix("r", (int16_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR, 1);
     for (size_t i = 0; i < (2 * PARAMS_N + PARAMS_NBAR) * PARAMS_NBAR; i++) {
         Sp[i] = LE_TO_UINT16(Sp[i]);
     }
@@ -220,7 +219,7 @@ int crypto_kem_dec(unsigned char *ss, const unsigned char *ct, const unsigned ch
     shake_input_seedSEprime[0] = 0x96;
     memcpy(&shake_input_seedSEprime[1], seedSEprime, CRYPTO_BYTES);
     shake((uint8_t*)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t), shake_input_seedSEprime, 1 + CRYPTO_BYTES);
-    OQS_print_hex_string("r", (uint8_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR*sizeof(uint16_t));
+    OQS_print_int_matrix("r", (int16_t *)Sp, (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR, 1);
     for (size_t i = 0; i < (2*PARAMS_N+PARAMS_NBAR)*PARAMS_NBAR; i++) {
         Sp[i] = LE_TO_UINT16(Sp[i]);
     }
