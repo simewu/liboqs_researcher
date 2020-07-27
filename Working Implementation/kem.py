@@ -2,23 +2,24 @@ import oqs
 
 algs = oqs.get_supported_KEM_mechanisms()
 
-print (algs)
+algLen = len(algs)
+##print (algs)
 
 def generate(algorithm):
     kem = oqs.KeyEncapsulation(algorithm)
     public_key = kem.generate_keypair()
-    print ("Generated pub key")
     ciphertext, shared_secret_server = kem.encap_secret(public_key)
-    print ("Set cipher text ")
     shared_secret_client = kem.decap_secret(ciphertext)
     if shared_secret_client == shared_secret_server:
-        print ("In true")
-        return True
+        print ("True")
     else:
-        print ("In false")
+        print ("FALSE!!!!!!!!!")
         return False
 
+for i in range(algLen):
+    print (algs[i])
+    generate(algs[i])
 
-userAlg = input("Choose PQ algorithm: ")
-generate(userAlg)
+##userAlg = input("Choose PQ algorithm: ")
+##generate(userAlg)
 
