@@ -18,7 +18,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(OQS_VERSION_TEXT "0.3.1-dev")
+set(OQS_VERSION_TEXT "0.4.0-dev")
 set(OQS_COMPILE_BUILD_TARGET "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_HOST_SYSTEM}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -35,14 +35,9 @@ endif()
 if(WIN32)
     set(CMAKE_GENERATOR_CC cl)
 endif()
-
-option(OQS_USE_CPU_EXTENSIONS "Enable compile and run-time support for CPU extensions such as AVX2, SSE, etc." ON)
-option(OQS_PORTABLE_BUILD "Ensure the resulting library is portable. This implies having run-time checks for CPU extensions." ON)
-option(OQS_BUILD_ONLY_LIB "Build only liboqs and do not expose build targets for tests, documentation, and pretty-printing available." OFF)
 include(.CMake/compiler_opts.cmake)
 
 include(.CMake/alg_support.cmake)
-
 if(OQS_USE_OPENSSL)
     if(NOT DEFINED OPENSSL_ROOT_DIR)
         if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")

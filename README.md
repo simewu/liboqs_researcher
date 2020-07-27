@@ -42,7 +42,6 @@ Details on each supported algorithm can be found in the [docs/algorithms folder]
 - **Classic McEliece**: Classic-McEliece-348864†, Classic-McEliece-348864f†, Classic-McEliece-460896†, Classic-McEliece-460896f†, Classic-McEliece-6688128†, Classic-McEliece-6688128f†, Classic-McEliece-6960119†, Classic-McEliece-6960119f†, Classic-McEliece-8192128†, Classic-McEliece-8192128f†
 - **FrodoKEM**: FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
 - **Kyber**: Kyber512, Kyber768, Kyber1024, Kyber512-90s, Kyber768-90s, Kyber1024-90s
-- **LEDAcrypt**: LEDAcryptKEM-LT12, LEDAcryptKEM-LT32, LEDAcryptKEM-LT52†
 - **NewHope**: NewHope-512-CCA, NewHope-1024-CCA
 - **NTRU**: NTRU-HPS-2048-509, NTRU-HPS-2048-677, NTRU-HPS-4096-821, NTRU-HRSS-701
 - **SABER**: LightSaber-KEM, Saber-KEM, FireSaber-KEM
@@ -172,13 +171,13 @@ liboqs includes some third party libraries or modules that are licensed differen
 - `.CMake/CMakeDependentOption.cmake`: BSD 3-Clause License
 - `src/common/common.c`: includes portions which are Apache License v2.0
 - `src/common/crypto/aes/aes_c.c`: public domain or any OSI-approved license
+- `src/common/crypto/aes/aes*_ni.c`: public domain
 - `src/common/crypto/sha2/sha2_c.c`: public domain
 - `src/common/crypto/sha3/fips202.c`: public domain
 - `src/common/crypto/sha3/keccak4x`: CC0 (public domain), except `brg_endian.h`
 - `src/kem/bike/additional`: Apache License v2.0
 - `src/kem/classic_mceliece/pqclean_*`: public domain
 - `src/kem/kyber/pqclean_*`: public domain
-- `src/kem/ledacrypt/pqclean_*`: public domain
 - `src/kem/newhope/pqclean_*`: public domain
 - `src/kem/ntru/pqclean_*`: public domain
 - `src/kem/saber/pqclean_*`: public domain
