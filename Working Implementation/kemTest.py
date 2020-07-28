@@ -11,7 +11,7 @@ def test (algorithm):
         public_key = kem.generate_keypair()
     endKey = timeit.timeit()
 
-    startEncap = time.timeit()
+    startEncap = timeit.timeit()
     for x in range (100):
         ciphertext, shared_secret_server = kem.encap_secret(public_key)
     endEncap = timeit.timeit()
