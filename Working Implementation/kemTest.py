@@ -6,27 +6,30 @@ algLen = len(algs)
 
 def test (algorithm):
     kem = oqs.KeyEncapsulation(algorithm)
-    startTime = timeit.timeit()
+    startKey = timeit.timeit()
     for i in range (100):
         public_key = kem.generate_keypair()
-    endTime = timeit.timeit()
+    endKey = timeit.timeit()
 
-    print ("Time taken to generate 100 public keys:")
-    print (endTime-startTime)
-    print ("Time taken for 1:")
-    print ((endTime-startTime)/100)
+    startEncap = time.timeit()
+    for x in range (100):
+        ciphertext, shared_secret_server = kem.encap_secret(public_key)
+    endEncap = timeit.timeit()
 
-    ciphertext, shared_secret_server = kem.encap_secret(public_key)
-
-    startTime = timeit.timeit()
+    startDecap = timeit.timeit()
     for j in range (100):
         shared_secret_client = kem.decap_secret(ciphertext)
-    endTime = timeit.timeit()
+    endDecap = timeit.timeit()
 
-    print ("Time taken to decap 100 messages")
-    print (endTime-startTime)
-    print ("Time taken to decap 1:")
-    print ((endTime-startTime)/100)
+
+    print("Total time to genKey is %d and time for 1 is %d",(endKey-startKey),((endKey-startKey)/100))
+    print()
+    print("Total time to encapsulate is %d and time for 1 is %d",(endEncap-startEncap),((endEncap-startEncap)/100))
+    print()
+    print("Total time to decapsulate is %d and time for 1 is %d",(endDecap-startDecap),((endDecap-startDecap)/100))
+    print()
+
+
 
 for i in range(1,algLen):
     print (algs[i])
