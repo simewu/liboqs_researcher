@@ -1,25 +1,25 @@
 import oqs
-import timeit
+import time
 
 algs = oqs.get_supported_KEM_mechanisms()
 algLen = len(algs)
 
 def test (algorithm):
     kem = oqs.KeyEncapsulation(algorithm)
-    startKey = timeit.timeit()
+    startKey = time.time()
     for i in range (100):
         public_key = kem.generate_keypair()
-    endKey = timeit.timeit()
+    endKey = time.time()
 
-    startEncap = timeit.timeit()
+    startEncap = time.time()
     for x in range (100):
         ciphertext, shared_secret_server = kem.encap_secret(public_key)
-    endEncap = timeit.timeit()
+    endEncap = time.time()
 
-    startDecap = timeit.timeit()
+    startDecap = time.time()
     for j in range (100):
         shared_secret_client = kem.decap_secret(ciphertext)
-    endDecap = timeit.timeit()
+    endDecap = time.time()
 
 
     print('Total time to genKey is ',(endKey-startKey), 'and time for 1 is ',((endKey-startKey)/100))
