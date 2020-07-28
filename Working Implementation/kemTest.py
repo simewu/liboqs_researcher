@@ -26,7 +26,7 @@ def test (algorithm):
     print()
     print('Total time to encapsulate is ',(endEncap-startEncap), 'and time for 1 is ',((endEncap-startEncap)/100))
     print()
-    print('Total time to decapsulate is ' (endDecap-startDecap), 'and time for 1 is ',((endDecap-startDecap)/100))
+    print('Total time to decapsulate is ' ,(endDecap-startDecap), 'and time for 1 is ',((endDecap-startDecap)/100))
     print()
 
 
