@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <oqs/oqs.h>
 
 /*
@@ -105,84 +106,59 @@ public:
 
 
 // Return the header row for the CSV file
-std::string benchmarkLogHeader() {
+std::string benchmarkLogHeader(std::vector<int> message_lengths) {
 	std::string row = "";
 	row += "Name,";
-	row += "Public Key Length (bytes),";
-	row += "Private Key Length (bytes),";
-	row += "Signature Length (bytes),";
-	row += "Public+Signature (bytes),";
-	row += "Number of samples,";
-	row += "Sample input message,";
-	row += "Initialization milliseconds,";
-	row += "Key generation milliseconds,";
-	row += "Signing milliseconds,";
-	row += "Verifying milliseconds,";
+	for(int i: message_lengths) {
+		row += "Sign L" + std::to_string(i) + ",";
+		row += "Verify L" + std::to_string(i) + ",";
+	}
 	return row;
 }
 
 // Given an algorithm name, run a benchmark n times and return its CSV row
-std::string benchmarkLog(std::string algorithm, int n) {
-	std::string message = "Hello, World!";
+std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths, int n) {
+	std::cout << algorithm << std::endl;
 
-	double clocks_initialization = 0;
-	double clocks_keypair_generation = 0;
-	double clocks_signing = 0;
-	double clocks_verifying = 0;
-	for(int i = 0; i < n; i++) {
+	std::string row = "\"" + algorithm + "\",";
 
-		std::clock_t t1 = std::clock();
-    		SignatureManager sigmanager(algorithm);
-		std::clock_t t2 = std::clock();
+	for(int length: message_lengths) {
+		std::string message(length, 'a');
+
+		double clocks_signing = 0;
+		double clocks_verifying = 0;
+		for(int i = 0; i < n; i++) {
+
+			SignatureManager sigmanager(algorithm);
 			sigmanager.generate_keypair();
-		std::clock_t t3 = std::clock();
-			unsigned char* signature = sigmanager.sign(message);
-		std::clock_t t4 = std::clock();
-			bool result = sigmanager.verify(message, signature);
-		std::clock_t t5 = std::clock();
+			std::clock_t t1 = std::clock();
+				unsigned char* signature = sigmanager.sign(message);
+			std::clock_t t2 = std::clock();
+				bool result = sigmanager.verify(message, signature);
+			std::clock_t t3 = std::clock();
 
-		clocks_initialization += (t2 - t1);
-		clocks_keypair_generation += (t3 - t2);
-		clocks_signing += (t4 - t3);
-		clocks_verifying += (t5 - t4);
+			clocks_signing += (t2 - t1);
+			clocks_verifying += (t3 - t2);
+		}
+		clocks_signing /= (double)n;
+		clocks_verifying /= (double)n;
+
+		double ms_signing = clocks_signing / (double)(CLOCKS_PER_SEC / 1000);
+		double ms_verifying =  clocks_verifying / (double)(CLOCKS_PER_SEC / 1000);
+
+		// Used to quickly grab the key and signature lengths
+		SignatureManager sigmanager(algorithm);
+
+		row += std::to_string(ms_signing) + ",";
+		row += std::to_string(ms_verifying) + ",";
 	}
-
-	clocks_initialization /= (double)n;
-	clocks_keypair_generation /= (double)n;
-	clocks_signing /= (double)n;
-	clocks_verifying /= (double)n;
-
-	double ms_initialization = clocks_initialization / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_keypair_generation = clocks_keypair_generation / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_signing = clocks_signing / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_verifying =  clocks_verifying / (double)(CLOCKS_PER_SEC / 1000);
-
-	// Used to quickly grab the key and signature lengths
-    SignatureManager sigmanager(algorithm);
-
- 	std::cout << "    Seconds: i-" << ms_initialization << "/k-" << clocks_keypair_generation << "/s-" << clocks_signing << "/v-" << clocks_verifying << " ms\t";
-	std::cout << "Bytes: " << (sigmanager.public_key_length + sigmanager.signature_length) << "\t";
-	std::cout << algorithm;
-	std::cout << std::endl;
-
-
-	std::string row = "";
-	row += "\"" + algorithm + "\",";
-	row += std::to_string(sigmanager.public_key_length) + ",";
-	row += std::to_string(sigmanager.private_key_length) + ",";
-	row += std::to_string(sigmanager.signature_length) + ",";
-	row += std::to_string(sigmanager.public_key_length + sigmanager.signature_length) + ",";
-	row += std::to_string(n) + ",";
-	row += "\"" + message + "\",";
-	row += std::to_string(ms_initialization) + ",";
-	row += std::to_string(ms_keypair_generation) + ",";
-	row += std::to_string(ms_signing) + ",";
-	row += std::to_string(ms_verifying) + ",";
 	return row;
 }
 
 int main(int argc, char** argv) {
-	int numSamples = 0;
+	std::vector<int> message_lengths{0, 10, 100, 1000, 10000, 100000, 1000000}; 
+
+	int numSamples = 1;
 	std::cout << "How many samples would you like ";
 	std::cin >> numSamples;
 
@@ -191,23 +167,26 @@ int main(int argc, char** argv) {
 	std::ofstream outputFile;
 	outputFile.open(fileName);
 
-	outputFile << benchmarkLogHeader() << std::endl;
+	outputFile << benchmarkLogHeader(message_lengths) << std::endl;
 	
 	std::cout << "Listing available algorithms:"<<"\n";
 
 	// A list of all available algorithms
-	//const char *availAlgs[63]={"DILITHIUM_2","DILITHIUM_3","DILITHIUM_4","Falcon-512","Falcon-1024","MQDSS-31-48","MQDSS-31-64","Rainbow-Ia-Classic","Rainbow-Ia-Cyclic","Rainbow-Ia-Cyclic-Compressed","Rainbow-IIIc-Classic","Rainbow-IIIc-Cyclic","Rainbow-IIIc-Cyclic-Compressed","Rainbow-Vc-Classic","Rainbow-Vc-Cyclic","Rainbow-Vc-Cyclic-Compressed","SPHINCS+-Haraka-128f-robust","SPHINCS+-Haraka-128f-simple","SPHINCS+-Haraka-128s-robust","SPHINCS+-Haraka-128s-simple","SPHINCS+-Haraka-192f-robust","SPHINCS+-Haraka-192f-simple","SPHINCS+-Haraka-192s-robust","SPHINCS+-Haraka-192s-simple","SPHINCS+-Haraka-256f-robust","SPHINCS+-Haraka-256f-simple","SPHINCS+-Haraka-256s-robust","SPHINCS+-Haraka-256s-simple","SPHINCS+-SHA256-128f-robust","SPHINCS+-SHA256-128f-simple","SPHINCS+-SHA256-128s-robust","SPHINCS+-SHA256-128s-simple","SPHINCS+-SHA256-192f-robust","SPHINCS+-SHA256-192f-simple","SPHINCS+-SHA256-192s-robust","SPHINCS+-SHA256-192s-simple","SPHINCS+-SHA256-256f-robust","SPHINCS+-SHA256-256f-simple","SPHINCS+-SHA256-256s-robust","SPHINCS+-SHA256-256s-simple","SPHINCS+-SHAKE256-128f-robust","SPHINCS+-SHAKE256-128f-simple","SPHINCS+-SHAKE256-128s-robust","SPHINCS+-SHAKE256-128s-simple","SPHINCS+-SHAKE256-192f-robust","SPHINCS+-SHAKE256-192f-simple","SPHINCS+-SHAKE256-192s-robust","SPHINCS+-SHAKE256-192s-simple","SPHINCS+-SHAKE256-256f-robust","SPHINCS+-SHAKE256-256f-simple","SPHINCS+-SHAKE256-256s-robust","SPHINCS+-SHAKE256-256s-simple","picnic_L1_FS","picnic_L1_UR","picnic_L3_FS","picnic_L3_UR","picnic_L5_FS","picnic_L5_UR","picnic2_L1_FS","picnic2_L3_FS","picnic2_L5_FS","qTesla-p-I","qTesla-p-III"};
 
 	const char *availAlgs[] = {
+		// Round 2
+		// "DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024", "MQDSS-31-48", "MQDSS-31-64", "Rainbow-Ia-Classic", "Rainbow-Ia-Cyclic", "Rainbow-Ia-Cyclic-Compressed", "Rainbow-IIIc-Classic", "Rainbow-IIIc-Cyclic", "Rainbow-IIIc-Cyclic-Compressed", "Rainbow-Vc-Classic", "Rainbow-Vc-Cyclic", "Rainbow-Vc-Cyclic-Compressed", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple", "picnic_L1_FS", "picnic_L1_UR", "picnic_L1_full", "picnic_L3_FS", "picnic_L3_UR", "picnic_L3_full", "picnic_L5_FS", "picnic_L5_UR", "picnic_L5_full", "picnic3_L1", "picnic3_L3", "picnic3_L5", "qTesla-p-I", "qTesla-p-III"
+		
+		// Round 3
 		"picnic_L1_FS", "picnic_L1_UR", "picnic_L1_full", "picnic_L3_FS", "picnic_L3_UR", "picnic_L3_full", "picnic_L5_FS", "picnic_L5_UR", "picnic_L5_full", "picnic3_L1", "picnic3_L3", "picnic3_L5", "qTesla-p-I", "qTesla-p-III", "DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024", "MQDSS-31-48", "MQDSS-31-64", "Rainbow-Ia-Classic", "Rainbow-Ia-Cyclic", "Rainbow-Ia-Cyclic-Compressed", "Rainbow-IIIc-Classic", "Rainbow-IIIc-Cyclic", "Rainbow-IIIc-Cyclic-Compressed", "Rainbow-Vc-Classic", "Rainbow-Vc-Cyclic", "Rainbow-Vc-Cyclic-Compressed", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
 	};
 	const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
-    
+
     for (int i = 0; i < numberOfAlgorithms; i++) {
+		std::cout << "Progress: " << (100 * (i + 1) / float(numberOfAlgorithms)) << "%" << std::endl;
 		std::string algorithm = availAlgs[i];
     	try {
-			std::cout << "Progress: " << (100 * (i + 1) / float(numberOfAlgorithms)) << "%" << std::endl;
-			std::string row = benchmarkLog(algorithm, numSamples);
+			std::string row = benchmarkLog(algorithm, message_lengths, numSamples);
 			outputFile << row << std::endl;
 		} catch(...) {
 			std::cout << "!!!!!!!!!!!!!!!!!!!! ERROR " << algorithm << " does not work." << std::endl;
