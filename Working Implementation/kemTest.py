@@ -22,11 +22,11 @@ def test (algorithm):
     endDecap = timeit.timeit()
 
 
-    print('Total time to genKey is %d and time for 1 is %d',(endKey-startKey),((endKey-startKey)/100))
+    print('Total time to genKey is ',(endKey-startKey), 'and time for 1 is ',((endKey-startKey)/100))
     print()
-    print('Total time to encapsulate is %d and time for 1 is %d',(endEncap-startEncap),((endEncap-startEncap)/100))
+    print('Total time to encapsulate is ',(endEncap-startEncap), 'and time for 1 is ',((endEncap-startEncap)/100))
     print()
-    print('Total time to decapsulate is %d and time for 1 is %d',(endDecap-startDecap),((endDecap-startDecap)/100))
+    print('Total time to decapsulate is ' (endDecap-startDecap), 'and time for 1 is ',((endDecap-startDecap)/100))
     print()
 
 
