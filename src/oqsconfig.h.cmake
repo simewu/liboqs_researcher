@@ -92,6 +92,14 @@
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128f 1
 
+#cmakedefine OQS_ENABLE_KEM_HQC 1
+#cmakedefine OQS_ENABLE_KEM_hqc_128_1_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_192_1_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_192_2_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_256_1_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_256_2_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_256_3_cca2 1
+
 #cmakedefine OQS_ENABLE_KEM_KYBER 1
 #cmakedefine OQS_ENABLE_KEM_kyber_512 1
 #cmakedefine OQS_ENABLE_KEM_kyber_512_avx2 1
@@ -143,7 +151,9 @@
 
 #cmakedefine OQS_ENABLE_SIG_MQDSS 1
 #cmakedefine OQS_ENABLE_SIG_mqdss_31_48 1
+#cmakedefine OQS_ENABLE_SIG_mqdss_31_48_avx2 1
 #cmakedefine OQS_ENABLE_SIG_mqdss_31_64 1
+#cmakedefine OQS_ENABLE_SIG_mqdss_31_64_avx2 1
 
 #cmakedefine OQS_ENABLE_SIG_RAINBOW 1
 #cmakedefine OQS_ENABLE_SIG_rainbow_Ia_classic 1

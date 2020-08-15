@@ -1,5 +1,5 @@
-liboqs version 0.4.0-dev
-========================
+liboqs version 0.4.0
+====================
 
 About
 -----
@@ -17,14 +17,15 @@ liboqs can be used with the following Open Quantum Safe application integrations
 liboqs can also be used in the following programming languages via language-specific wrappers:
 
 - C++, via https://github.com/open-quantum-safe/liboqs-cpp
-- Go, via https://github.com/thales-e-security/goliboqs
+- Go, via https://github.com/open-quantum-safe/liboqs-go
+- Java, via https://github.com/open-quantum-safe/liboqs-java
 - .NET, via https://github.com/open-quantum-safe/liboqs-dotnet
 - Python 3, via https://github.com/open-quantum-safe/liboqs-python
 
 Release notes
 =============
 
-This is the development version 0.4.0 of liboqs.  Its project page on GitHub is at https://github.com/open-quantum-safe/liboqs/projects/13.
+This is version 0.4.0 of liboqs.  It was released on August 11, 2020.
 
 What's New
 ----------
@@ -33,6 +34,8 @@ This release continues from the 0.3.0 release of liboqs.
 
 ### Key encapsulation mechanisms
 
+- HQC: Added version 2019/08/24
+- NewHope: Update to version 1.1
 - SIKE: Update to version 3.3
 
 ### Digital signature schemes
@@ -47,4 +50,4 @@ This release continues from the 0.3.0 release of liboqs.
 Deprecations
 ------------
 
-As a result of NIST's announcement of Round 3 of the Post-Quantum Cryptography Standardization Project, the 0.4.x series will be the last release(s) of liboqs that contain algorithms from Round 2 that are not Round 3 finalists or alternate candidates.  Those algorithms will be removed in the 0.5.0 release.  The algorithms in question are: NewHope, ThreeBears, MQDSS, and qTesla.  These algorithms are considered deprecated within liboqs and are no longer receiving updates.
+As a result of NIST's announcement of Round 3 of the Post-Quantum Cryptography Standardization Project, the 0.4.x series will be the last release(s) of liboqs that contain algorithms from Round 2 that are not Round 3 finalists or alternate candidates.  Those algorithms will be removed in the 0.5.0 release.  The algorithms in question are: NewHope, ThreeBears, MQDSS, and qTesla.  These algorithms are considered deprecated within liboqs and will receive no updates after this release.

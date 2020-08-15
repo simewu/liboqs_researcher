@@ -179,9 +179,9 @@ class KeyEncapsulation(ct.Structure):
 
     def free(self):
         """Releases the native resources."""
-        native().OQS_KEM_free(self._kem)
         if hasattr(self, "secret_key"):
             native().OQS_MEM_cleanse(ct.byref(self.secret_key), self._kem.contents.length_secret_key)
+        native().OQS_KEM_free(self._kem)
 
     def __repr__(self):
         return "Key encapsulation mechanism: " + self._kem.contents.method_name.decode()
@@ -284,7 +284,6 @@ class Signature(ct.Structure):
         """
         public_key = ct.create_string_buffer(self._sig.contents.length_public_key)
         self.secret_key = ct.create_string_buffer(self._sig.contents.length_secret_key)
-        private_key = self.secret_key
         rv = native().OQS_SIG_keypair(self._sig, ct.byref(public_key), ct.byref(self.secret_key))
         return bytes(public_key) if rv == OQS_SUCCESS else 0
 
@@ -331,9 +330,9 @@ class Signature(ct.Structure):
 
     def free(self):
         """Releases the native resources."""
-        native().OQS_SIG_free(self._sig)
         if hasattr(self, "secret_key"):
             native().OQS_MEM_cleanse(ct.byref(self.secret_key), self._sig.contents.length_secret_key)
+        native().OQS_SIG_free(self._sig)
 
     def __repr__(self):
         return "Signature mechanism: " + self._sig.contents.method_name.decode()
