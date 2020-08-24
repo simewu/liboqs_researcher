@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 	std::cout << "How many samples would you like ";
 	std::cin >> numSamples;
 
-	std::string fileName = "Algorithm_benchmark_" + std::to_string(numSamples) + "_rain.csv";
+	std::string fileName = "Algorithm_benchmark_" + std::to_string(numSamples) + ".csv";
 
 	std::ofstream outputFile;
 	outputFile.open(fileName);
