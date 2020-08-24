@@ -117,12 +117,13 @@ std::string benchmarkLogHeader(std::vector<int> message_lengths) {
 }
 
 // Given an algorithm name, run a benchmark n times and return its CSV row
-std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths, int n) {
+std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths, int n, int numberOfAlgorithms) {
 	std::cout << algorithm << std::endl;
 
 	std::string row = "\"" + algorithm + "\",";
 
 	for(int length: message_lengths) {
+		std::cout << algorithm << " Local progress length: " << length << std::endl;
 		std::string message(length, 'a');
 
 		double clocks_signing = 0;
@@ -156,13 +157,13 @@ std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths
 }
 
 int main(int argc, char** argv) {
-	std::vector<int> message_lengths{0, 10, 100, 1000, 10000, 100000, 1000000}; 
+	std::vector<int> message_lengths{0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000}; 
 
 	int numSamples = 1;
 	std::cout << "How many samples would you like ";
 	std::cin >> numSamples;
 
-	std::string fileName = "Algorithm_benchmark_" + std::to_string(numSamples) + ".csv";
+	std::string fileName = "Algorithm_benchmark_" + std::to_string(numSamples) + "_rain.csv";
 
 	std::ofstream outputFile;
 	outputFile.open(fileName);
@@ -178,15 +179,21 @@ int main(int argc, char** argv) {
 		// "DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024", "MQDSS-31-48", "MQDSS-31-64", "Rainbow-Ia-Classic", "Rainbow-Ia-Cyclic", "Rainbow-Ia-Cyclic-Compressed", "Rainbow-IIIc-Classic", "Rainbow-IIIc-Cyclic", "Rainbow-IIIc-Cyclic-Compressed", "Rainbow-Vc-Classic", "Rainbow-Vc-Cyclic", "Rainbow-Vc-Cyclic-Compressed", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple", "picnic_L1_FS", "picnic_L1_UR", "picnic_L1_full", "picnic_L3_FS", "picnic_L3_UR", "picnic_L3_full", "picnic_L5_FS", "picnic_L5_UR", "picnic_L5_full", "picnic3_L1", "picnic3_L3", "picnic3_L5", "qTesla-p-I", "qTesla-p-III"
 		
 		// Round 3
-		"picnic_L1_FS", "picnic_L1_UR", "picnic_L1_full", "picnic_L3_FS", "picnic_L3_UR", "picnic_L3_full", "picnic_L5_FS", "picnic_L5_UR", "picnic_L5_full", "picnic3_L1", "picnic3_L3", "picnic3_L5", "qTesla-p-I", "qTesla-p-III", "DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024", "MQDSS-31-48", "MQDSS-31-64", "Rainbow-Ia-Classic", "Rainbow-Ia-Cyclic", "Rainbow-Ia-Cyclic-Compressed", "Rainbow-IIIc-Classic", "Rainbow-IIIc-Cyclic", "Rainbow-IIIc-Cyclic-Compressed", "Rainbow-Vc-Classic", "Rainbow-Vc-Cyclic", "Rainbow-Vc-Cyclic-Compressed", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
+		//"picnic_L1_FS", "picnic_L1_UR", "picnic_L1_full", "picnic_L3_FS", "picnic_L3_UR", "picnic_L3_full", "picnic_L5_FS", "picnic_L5_UR", "picnic_L5_full", "picnic3_L1", "picnic3_L3", "picnic3_L5", "qTesla-p-I", "qTesla-p-III", "DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024", "MQDSS-31-48", "MQDSS-31-64", "Rainbow-Ia-Classic", "Rainbow-Ia-Cyclic", "Rainbow-Ia-Cyclic-Compressed", "Rainbow-IIIc-Classic", "Rainbow-IIIc-Cyclic", "Rainbow-IIIc-Cyclic-Compressed", "Rainbow-Vc-Classic", "Rainbow-Vc-Cyclic", "Rainbow-Vc-Cyclic-Compressed", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
+		
+		// Dilithium and Falcon
+		"DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_4", "Falcon-512", "Falcon-1024",
+
+		// Rainbow
+		"Rainbow-Ia-Cyclic", "Rainbow-Vc-Cyclic"
 	};
 	const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
 
     for (int i = 0; i < numberOfAlgorithms; i++) {
-		std::cout << "Progress: " << (100 * (i + 1) / float(numberOfAlgorithms)) << "%" << std::endl;
+		std::cout << "\n\nProgress: " << (100 * i / float(numberOfAlgorithms)) << "%\n\n" << std::endl;
 		std::string algorithm = availAlgs[i];
     	try {
-			std::string row = benchmarkLog(algorithm, message_lengths, numSamples);
+			std::string row = benchmarkLog(algorithm, message_lengths, numSamples, numberOfAlgorithms);
 			outputFile << row << std::endl;
 		} catch(...) {
 			std::cout << "!!!!!!!!!!!!!!!!!!!! ERROR " << algorithm << " does not work." << std::endl;
