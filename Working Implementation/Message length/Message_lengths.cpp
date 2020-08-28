@@ -5,6 +5,8 @@
 #include <vector>
 #include <oqs/oqs.h>
 
+
+
 /*
 	algorithm: What algorithm the instance of the class is using
 	public_key_length: Bytes of the public key
@@ -110,6 +112,8 @@ std::string benchmarkLogHeader(std::vector<int> message_lengths) {
 	std::string row = "";
 	row += "Name,";
 	for(int i: message_lengths) {
+		row += "Allocate L" + std::to_string(i) + ",";
+		row += "Keygen L" + std::to_string(i) + ",";
 		row += "Sign L" + std::to_string(i) + ",";
 		row += "Verify L" + std::to_string(i) + ",";
 	}
@@ -136,49 +140,68 @@ std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths
 	std::string row = "\"" + algorithm + "\",";
 
 	for(int length: message_lengths) {
+
 		std::cout << algorithm << " Local progress length: " << length << std::endl;
-		std::string message(length, ' ');
-		gen_random(message, length);
+		char *cmessage = new char[length];
 
-		cout << message << endl;
-		continue;
+		gen_random(cmessage, length);
+		std::string message = std::string(cmessage, length);
+		std::cout << "ALLOCATION SUCCESSFUL" << std::endl;
 
+
+		//std::cout << message << std::endl;
+		//continue;
+
+		double clocks_allocate = 0;
+		double clocks_keygen = 0;
 		double clocks_signing = 0;
 		double clocks_verifying = 0;
+		std::clock_t t0, t1, t2, t3, t4;
 		for(int i = 0; i < n; i++) {
+			
 
-
-			std::clock_t t0 = std::clock();
+			t0 = std::clock();
 				SignatureManager sigmanager(algorithm);
-			std::clock_t t1 = std::clock();
+			t1 = std::clock();
 				sigmanager.generate_keypair();
-			std::clock_t t2 = std::clock();
+			t2 = std::clock();
 				unsigned char* signature = sigmanager.sign(message);
-			std::clock_t t3 = std::clock();
+			t3 = std::clock();
 				bool result = sigmanager.verify(message, signature);
-			std::clock_t t4 = std::clock();
+			t4 = std::clock();
 
 			clocks_allocate += (t1 - t0);
 			clocks_keygen += (t2 - t1);
 			clocks_signing += (t3 - t2);
 			clocks_verifying += (t4 - t3);
 		}
+
+		clocks_allocate /= (double)n;
+		clocks_keygen /= (double)n;
 		clocks_signing /= (double)n;
 		clocks_verifying /= (double)n;
 
+		double ms_allocate = clocks_allocate / (double)(CLOCKS_PER_SEC / 1000);
+		double ms_keygen = clocks_keygen / (double)(CLOCKS_PER_SEC / 1000);
 		double ms_signing = clocks_signing / (double)(CLOCKS_PER_SEC / 1000);
 		double ms_verifying =  clocks_verifying / (double)(CLOCKS_PER_SEC / 1000);
 
 		// Used to quickly grab the key and signature lengths
-		SignatureManager sigmanager(algorithm);
+		//SignatureManager sigmanager(algorithm);
 
+		row += std::to_string(ms_allocate) + ",";
+		row += std::to_string(ms_keygen) + ",";
 		row += std::to_string(ms_signing) + ",";
 		row += std::to_string(ms_verifying) + ",";
+			std::cout << "Sweet, generated" << std::endl;
 	}
+
 	return row;
 }
 
 int main(int argc, char** argv) {
+	srand((unsigned int)time(NULL));
+
 	std::vector<int> message_lengths{0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000}; 
 
 	int numSamples = 1;
