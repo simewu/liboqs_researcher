@@ -116,6 +116,19 @@ std::string benchmarkLogHeader(std::vector<int> message_lengths) {
 	return row;
 }
 
+void gen_random(char *s, const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
+}
+
 // Given an algorithm name, run a benchmark n times and return its CSV row
 std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths, int n, int numberOfAlgorithms) {
 	std::cout << algorithm << std::endl;
@@ -124,22 +137,31 @@ std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths
 
 	for(int length: message_lengths) {
 		std::cout << algorithm << " Local progress length: " << length << std::endl;
-		std::string message(length, 'a');
+		std::string message(length, ' ');
+		gen_random(message, length);
+
+		cout << message << endl;
+		continue;
 
 		double clocks_signing = 0;
 		double clocks_verifying = 0;
 		for(int i = 0; i < n; i++) {
 
-			SignatureManager sigmanager(algorithm);
-			sigmanager.generate_keypair();
-			std::clock_t t1 = std::clock();
-				unsigned char* signature = sigmanager.sign(message);
-			std::clock_t t2 = std::clock();
-				bool result = sigmanager.verify(message, signature);
-			std::clock_t t3 = std::clock();
 
-			clocks_signing += (t2 - t1);
-			clocks_verifying += (t3 - t2);
+			std::clock_t t0 = std::clock();
+				SignatureManager sigmanager(algorithm);
+			std::clock_t t1 = std::clock();
+				sigmanager.generate_keypair();
+			std::clock_t t2 = std::clock();
+				unsigned char* signature = sigmanager.sign(message);
+			std::clock_t t3 = std::clock();
+				bool result = sigmanager.verify(message, signature);
+			std::clock_t t4 = std::clock();
+
+			clocks_allocate += (t1 - t0);
+			clocks_keygen += (t2 - t1);
+			clocks_signing += (t3 - t2);
+			clocks_verifying += (t4 - t3);
 		}
 		clocks_signing /= (double)n;
 		clocks_verifying /= (double)n;
