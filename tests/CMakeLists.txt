@@ -90,12 +90,16 @@ add_executable(speed_sig speed_sig.c)
 target_link_libraries(speed_sig PRIVATE ${API_TEST_DEPS})
 
 # See https://github.com/open-quantum-safe/liboqs/issues/738#issuecomment-621394744
-if("$ENV{CIRCLE_JOB}" STREQUAL "ubuntu-bionic-x86_64-asan" AND
-   DEFINED ENV{CIRCLE_BUILD_NUM})
+string(TOUPPER "$ENV{RUN_TESTS_PARALLEL}" RUN_TESTS_PARALLEL_UPPER)
+if(RUN_TESTS_PARALLEL_UPPER STREQUAL "FALSE")
     set(NUMPROCESSES 1)
 else()
     set(NUMPROCESSES auto)
 endif()
+
+# Record compile options -- from target speed_kem - don't set any options only for speed_kem!
+get_property(OQS_COMPILE_OPTIONS TARGET speed_kem PROPERTY COMPILE_OPTIONS)
+add_definitions(-DOQS_COMPILE_OPTIONS="[${OQS_COMPILE_OPTIONS}]")
 
 # TODO: Get CMake to find python.
 # and set PATH variable in Windows
