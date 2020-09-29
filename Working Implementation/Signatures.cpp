@@ -217,13 +217,15 @@ int main(int argc, char** argv) {
     outputFile.close();
     std::cout << std::endl << "All data has been successfully saved to " << fileName << "!" << std::endl;
 
-    return 0;
+    //return 0;
 
 	//getting user choice for the algorithm
 	std::string userChoice;
-	std::cout << "Enter algorithm of choice: ";
-	std::cin >> userChoice;
-
+	//std::cout << "Enter algorithm of choice: ";
+	//std::cin >> userChoice;
+	userChoice = "DILITHIUM_2";
+	std::cout << "Algorithm of choice " << userChoice << std::endl;
+	
 	std::string algorithm = userChoice;
 	std::string message = "Hello, world!";
 
