@@ -12,7 +12,7 @@ Implementation
 --------------
 
 - **Source of implementation**: https://github.com/Microsoft/PQCrypto-SIDH
-- **Implementation version**: v3.3 + fixes (https://github.com/microsoft/PQCrypto-SIDH/commit/873f8d118ee361181d23d1b0819fd6e2abda43b3
+- **Implementation version**: v3.3 + fixes (https://github.com/microsoft/PQCrypto-SIDH/commit/f43c9f7463071570f61bc576d5a50e5cb05d3b44
 - **License**: MIT License
 - **Constant-time**: Yes
 - **Optimizations**: Portable C, with assembly optimizations on AMD64 and selected parameter sets on ARM64 (selected at compile-time, enabled by default if available)
@@ -36,8 +36,8 @@ Parameter sets
 | SIKE-p503-compressed |     IND-CCA    |              2              |           225           |           407           |           280           |             24             |
 | SIKE-p610            |     IND-CCA    |              3              |           462           |           524           |           486           |             24             |
 | SIKE-p610-compressed |     IND-CCA    |              3              |           274           |           491           |           336           |             24             |
-| SIKE-p751            |     IND-CCA    |              3              |           564           |           644           |           596           |             32             |
-| SIKE-p751-compressed |     IND-CCA    |              3              |           335           |           602           |           410           |             32             |
+| SIKE-p751            |     IND-CCA    |              5              |           564           |           644           |           596           |             32             |
+| SIKE-p751-compressed |     IND-CCA    |              5              |           335           |           602           |           410           |             32             |
 
 Additional comments
 -------------------
