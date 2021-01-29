@@ -82,6 +82,7 @@ def generate(algorithm):
 
 
 # Testing code
+
 userAlg = input("Choose PQ algorithm: ")
 result = generate(userAlg)
 print('Public key:')
