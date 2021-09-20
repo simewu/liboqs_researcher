@@ -73,8 +73,8 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg + 4, msg, msg_len);
 		memcpy(*signed_msg + 4 + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-		///// OQS_COPY_FROM_PQCLEAN_FRAGMENT_COMBINE_MESSAGE_SIGNATURE_START
-	} else if (0 == strcmp(sig->method_name, "DILITHIUM_2")) {
+		///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_COMBINE_MESSAGE_SIGNATURE_START
+	} else if (0 == strcmp(sig->method_name, "Dilithium2")) {
 		// signed_msg = signature || msg
 		*signed_msg_len = signature_len + msg_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -84,7 +84,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, signature, signature_len);
 		memcpy(*signed_msg + signature_len, msg, msg_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "DILITHIUM_3")) {
+	} else if (0 == strcmp(sig->method_name, "Dilithium3")) {
 		// signed_msg = signature || msg
 		*signed_msg_len = signature_len + msg_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -94,7 +94,37 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, signature, signature_len);
 		memcpy(*signed_msg + signature_len, msg, msg_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "DILITHIUM_4")) {
+	} else if (0 == strcmp(sig->method_name, "Dilithium5")) {
+		// signed_msg = signature || msg
+		*signed_msg_len = signature_len + msg_len;
+		*signed_msg = malloc(*signed_msg_len);
+		if (*signed_msg == NULL) {
+			return OQS_ERROR;
+		}
+		memcpy(*signed_msg, signature, signature_len);
+		memcpy(*signed_msg + signature_len, msg, msg_len);
+		return OQS_SUCCESS;
+	} else if (0 == strcmp(sig->method_name, "Dilithium2-AES")) {
+		// signed_msg = signature || msg
+		*signed_msg_len = signature_len + msg_len;
+		*signed_msg = malloc(*signed_msg_len);
+		if (*signed_msg == NULL) {
+			return OQS_ERROR;
+		}
+		memcpy(*signed_msg, signature, signature_len);
+		memcpy(*signed_msg + signature_len, msg, msg_len);
+		return OQS_SUCCESS;
+	} else if (0 == strcmp(sig->method_name, "Dilithium3-AES")) {
+		// signed_msg = signature || msg
+		*signed_msg_len = signature_len + msg_len;
+		*signed_msg = malloc(*signed_msg_len);
+		if (*signed_msg == NULL) {
+			return OQS_ERROR;
+		}
+		memcpy(*signed_msg, signature, signature_len);
+		memcpy(*signed_msg + signature_len, msg, msg_len);
+		return OQS_SUCCESS;
+	} else if (0 == strcmp(sig->method_name, "Dilithium5-AES")) {
 		// signed_msg = signature || msg
 		*signed_msg_len = signature_len + msg_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -144,7 +174,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		(*signed_msg)[42 + msg_len] = 0x2A;
 		memcpy(*signed_msg + 42 + msg_len + 1, falc_sig, signature_len - 41);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Ia-Classic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-I-Classic")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -154,7 +184,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Ia-Cyclic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-I-Circumzenithal")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -164,7 +194,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Ia-Cyclic-Compressed")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-I-Compressed")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -174,7 +204,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-IIIc-Classic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-III-Classic")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -184,7 +214,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-IIIc-Cyclic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-III-Circumzenithal")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -194,7 +224,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-IIIc-Cyclic-Compressed")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-III-Compressed")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -204,7 +234,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Vc-Classic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-V-Classic")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -214,7 +244,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Vc-Cyclic")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-V-Circumzenithal")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -224,7 +254,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, msg, msg_len);
 		memcpy(*signed_msg + msg_len, signature, signature_len);
 		return OQS_SUCCESS;
-	} else if (0 == strcmp(sig->method_name, "Rainbow-Vc-Cyclic-Compressed")) {
+	} else if (0 == strcmp(sig->method_name, "Rainbow-V-Compressed")) {
 		// signed_msg = msg || signature
 		*signed_msg_len = msg_len + signature_len;
 		*signed_msg = malloc(*signed_msg_len);
@@ -594,7 +624,7 @@ OQS_STATUS combine_message_signature(uint8_t **signed_msg, size_t *signed_msg_le
 		memcpy(*signed_msg, signature, signature_len);
 		memcpy(*signed_msg + signature_len, msg, msg_len);
 		return OQS_SUCCESS;
-		///// OQS_COPY_FROM_PQCLEAN_FRAGMENT_COMBINE_MESSAGE_SIGNATURE_END
+		///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_COMBINE_MESSAGE_SIGNATURE_END
 	} else {
 		return OQS_ERROR;
 	}

@@ -1,36 +1,85 @@
-Rainbow
-=======
+# Rainbow
 
-- **Algorithm type**: signature
-- **Main cryptographic assumption**: multivariable polynomials, unbalanced oil and vinegatr
-- **Scheme authors**: Jintai Ding, Ming-Shing Chen, Albrecht Petzoldt, Dieter Schmidt, Bo-Yin Yang
-- **Version**: NIST Round 2 submission
+- **Algorithm type**: Digital signature scheme.
+- **Main cryptographic assumption**: multivariable polynomials, unbalanced oil and vinegar.
+- **Principal submitters**: Jintai Ding.
+- **Auxiliary submitters**: Ming-Shing Chen, Matthias Kannwischer, Jacques Patarin, Albrecht Petzoldt, Dieter Schmidt, Bo-Yin Yang.
+- **Authors' website**: https://www.pqcrainbow.org/
+- **Specification version**: NIST Round 3 submission.
+- **Implementation source**: https://github.com/PQClean/PQClean/commit/6c1ea921ee4a06a6b50c742ca540bb9b5e51aee2, which takes it from:
+  - https://github.com/fast-crypto-lab/rainbow-submission-round2/commit/173ada0e077e1b9dbd8e4a78994f87acc0c92263
+- **Implementation license (SPDX-Identifier)**: CC0-1.0.
 
-Implementation
---------------
+## Parameter set summary
 
-- **Source of implementation**: https://github.com/fast-crypto-lab/rainbow-submission-round2
-- **Implementation version**: https://github.com/PQClean/PQClean/commit/b4078aae55f9efbc7b3ab7b3c702be376f7a7987
-- **License**: CC0 1.0
-- **Constant-time**: Yes
-- **Optimizations**: Portable C
+|       Parameter set        | Security model   |   Claimed NIST Level |   Public key size (bytes) |   Secret key size (bytes) |   Signature size (bytes) |
+|:--------------------------:|:-----------------|---------------------:|--------------------------:|--------------------------:|-------------------------:|
+|     Rainbow-I-Classic      | EUF-CMA          |                    1 |                    161600 |                    103648 |                       66 |
+|  Rainbow-I-Circumzenithal  | EUF-CMA          |                    1 |                     60192 |                    103648 |                       66 |
+|    Rainbow-I-Compressed    | EUF-CMA          |                    1 |                     60192 |                        64 |                       66 |
+|    Rainbow-III-Classic     | EUF-CMA          |                    3 |                    882080 |                    626048 |                      164 |
+| Rainbow-III-Circumzenithal | EUF-CMA          |                    3 |                    264608 |                    626048 |                      164 |
+|   Rainbow-III-Compressed   | EUF-CMA          |                    3 |                    264608 |                        64 |                      164 |
+|     Rainbow-V-Classic      | EUF-CMA          |                    5 |                   1930600 |                   1408736 |                      212 |
+|  Rainbow-V-Circumzenithal  | EUF-CMA          |                    5 |                    536136 |                   1408736 |                      212 |
+|    Rainbow-V-Compressed    | EUF-CMA          |                    5 |                    536136 |                        64 |                      212 |
 
-Parameter sets
---------------
+## Rainbow-I-Classic implementation characteristics
 
-| Parameter set                  | Security model | Claimed NIST security level | Public key size (bytes) | Secret key size (bytes) | Signature size (bytes) |
-|--------------------------------|:--------------:|:---------------------------:|:-----------------------:|:-----------------------:|:----------------------:|
-| Rainbow-Ia-Classic             |     EUF-CMA    |              1              |          148992         |          92960          |           64           |
-| Rainbow-Ia-Cyclic              |     EUF-CMA    |              1              |          58144          |          92960          |           64           |
-| Rainbow-Ia-Cyclic-Compressed   |     EUF-CMA    |              1              |          58144          |            64           |           64           |
-| Rainbow-IIIc-Classic           |     EUF-CMA    |              3              |          710640         |          511448         |           156          |
-| Rainbow-IIIc-Cyclic            |     EUF-CMA    |              3              |          206744         |          511448         |           156          |
-| Rainbow-IIIc-Cyclic-Compressed |     EUF-CMA    |              3              |          206744         |            64           |           156          |
-| Rainbow-Vc-Classic             |     EUF-CMA    |              5              |         1705536         |         1227104         |           204          |
-| Rainbow-Vc-Cyclic              |     EUF-CMA    |              5              |          491936         |         1227104         |           204          |
-| Rainbow-Vc-Cyclic-Compressed   |     EUF-CMA    |              5              |          491936         |            64           |           204          |
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?‡   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:----------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | False                 |
 
-Security considerations
------------------------
+ ‡For an explanation of what this denotes, consult the [Explanation of Terms](#explanation-of-terms) section at the end of this file.
 
-In October 2020, Beullens announced [improved cryptanalysis of Rainbow](https://eprint.iacr.org/2020/1343.pdf) that somewhat reduces the security of the Round 2 and Round 3 parameters.  [As of October 28, 2020](https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/70We3SNi7Ss), the scheme authors have acknowledged the attack and are preparing a response.
+## Rainbow-I-Circumzenithal implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | False                |
+
+## Rainbow-I-Compressed implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | False                |
+
+## Rainbow-III-Classic implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Rainbow-III-Circumzenithal implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Rainbow-III-Compressed implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Rainbow-V-Classic implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Rainbow-V-Circumzenithal implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Rainbow-V-Compressed implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          clean           | All                         | All                             | None                    | True                               | True                                           | True                 |
+
+## Explanation of Terms
+
+- **Large Stack Usage**: Implementations identified as having such may cause failures when running in threads or in constrained environments.

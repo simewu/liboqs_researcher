@@ -2,8 +2,12 @@
 
 try_run(RUN_RESULT COMPILE_RESULT
         "${CMAKE_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/.CMake/detect_gcc_clang_intrinsics.c"
-        COMPILE_DEFINITIONS -march=native
+        COMPILE_DEFINITIONS ${OQS_OPT_FLAG}
+        COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
         RUN_OUTPUT_VARIABLE RUN_OUTPUT)
+if(NOT COMPILE_RESULT)
+     message(FATAL_ERROR "Could not compile .CMake/detect_gcc_clang_intrinsics.c" ${COMPILE_OUTPUT})
+endif()
 if(NOT RUN_RESULT EQUAL 0)
      message(FATAL_ERROR ".CMake/detect_gcc_clang_intrinsics.c returned exit code: " ${RUN_RESULT})
 endif()

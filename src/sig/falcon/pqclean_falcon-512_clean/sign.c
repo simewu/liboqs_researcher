@@ -1,3 +1,5 @@
+#include "inner.h"
+
 /*
  * Falcon signature generation.
  *
@@ -29,7 +31,6 @@
  * @author   Thomas Pornin <thomas.pornin@nccgroup.com>
  */
 
-#include "inner.h"
 
 /* =================================================================== */
 
@@ -266,7 +267,7 @@ PQCLEAN_FALCON512_CLEAN_expand_privkey(fpr *expanded_key,
     PQCLEAN_FALCON512_CLEAN_poly_neg(rF, logn);
 
     /*
-     * The Gram matrix is G = B·B*. Formulas are:
+     * The Gram matrix is G = B x B*. Formulas are:
      *   g00 = b00*adj(b00) + b01*adj(b01)
      *   g01 = b00*adj(b10) + b01*adj(b11)
      *   g10 = b10*adj(b00) + b11*adj(b01)
@@ -787,7 +788,7 @@ do_sign_dyn(samplerZ samp, void *samp_ctx, int16_t *s2,
     PQCLEAN_FALCON512_CLEAN_poly_neg(b11, logn);
 
     /*
-     * Compute the Gram matrix G = B·B*. Formulas are:
+     * Compute the Gram matrix G = B x B*. Formulas are:
      *   g00 = b00*adj(b00) + b01*adj(b01)
      *   g01 = b00*adj(b10) + b01*adj(b11)
      *   g10 = b10*adj(b00) + b11*adj(b01)
@@ -1081,8 +1082,8 @@ BerExp(prng *p, fpr x, fpr ccs) {
 int
 PQCLEAN_FALCON512_CLEAN_sampler(void *ctx, fpr mu, fpr isigma) {
     sampler_context *spc;
-    int s;
-    fpr r, dss, ccs;
+    int s, z0, z, b;
+    fpr r, dss, ccs, x;
 
     spc = ctx;
 
@@ -1107,9 +1108,6 @@ PQCLEAN_FALCON512_CLEAN_sampler(void *ctx, fpr mu, fpr isigma) {
      * We now need to sample on center r.
      */
     for (;;) {
-        int z0, z, b;
-        fpr x;
-
         /*
          * Sample z for a Gaussian distribution. Then get a
          * random bit b to turn the sampling into a bimodal

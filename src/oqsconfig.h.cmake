@@ -2,10 +2,16 @@
 
 #cmakedefine OQS_VERSION_TEXT "@OQS_VERSION_TEXT@"
 #cmakedefine OQS_COMPILE_BUILD_TARGET "@OQS_COMPILE_BUILD_TARGET@"
-#cmakedefine OQS_PORTABLE_BUILD 1
-
-#cmakedefine OQS_KEM_DEFAULT @OQS_KEM_DEFAULT@
-#cmakedefine OQS_SIG_DEFAULT @OQS_SIG_DEFAULT@
+#cmakedefine OQS_DIST_BUILD 1
+#cmakedefine OQS_DIST_X86_64_BUILD 1
+#cmakedefine OQS_DIST_X86_BUILD 1
+#cmakedefine OQS_DIST_ARM64v8_BUILD 1
+#cmakedefine OQS_DIST_ARM32v7_BUILD 1
+#cmakedefine OQS_DIST_PPC64LE_BUILD 1
+#cmakedefine OQS_DEBUG_BUILD 1
+#cmakedefine ARCH_X86_64 1
+#cmakedefine ARCH_ARM64v8 1
+#cmakedefine ARCH_ARM32v7 1
 
 #cmakedefine OQS_USE_OPENSSL 1
 #cmakedefine OQS_USE_AES_OPENSSL 1
@@ -13,25 +19,33 @@
 #cmakedefine OQS_USE_SHA3_OPENSSL 1
 
 #cmakedefine OQS_USE_PTHREADS_IN_TESTS 1
-#cmakedefine OQS_USE_CPU_EXTENSIONS 1
 
+#cmakedefine OQS_USE_ADX_INSTRUCTIONS 1
 #cmakedefine OQS_USE_AES_INSTRUCTIONS 1
 #cmakedefine OQS_USE_AVX_INSTRUCTIONS 1
 #cmakedefine OQS_USE_AVX2_INSTRUCTIONS 1
 #cmakedefine OQS_USE_AVX512_INSTRUCTIONS 1
 #cmakedefine OQS_USE_BMI1_INSTRUCTIONS 1
 #cmakedefine OQS_USE_BMI2_INSTRUCTIONS 1
-#cmakedefine OQS_USE_PCLMUL_INSTRUCTIONS 1
+#cmakedefine OQS_USE_PCLMULQDQ_INSTRUCTIONS 1
+#cmakedefine OQS_USE_VPCLMULQDQ_INSTRUCTIONS 1
 #cmakedefine OQS_USE_POPCNT_INSTRUCTIONS 1
 #cmakedefine OQS_USE_SSE_INSTRUCTIONS 1
 #cmakedefine OQS_USE_SSE2_INSTRUCTIONS 1
 #cmakedefine OQS_USE_SSE3_INSTRUCTIONS 1
 
+#cmakedefine OQS_USE_ARM_AES_INSTRUCTIONS 1
+#cmakedefine OQS_USE_ARM_SHA2_INSTRUCTIONS 1
+#cmakedefine OQS_USE_ARM_SHA3_INSTRUCTIONS 1
+#cmakedefine OQS_USE_ARM_NEON_INSTRUCTIONS 1
+
+#cmakedefine OQS_ENABLE_TEST_CONSTANT_TIME 1
+
+#cmakedefine OQS_ENABLE_SHA3_xkcp_low_avx2 1
+
 #cmakedefine OQS_ENABLE_KEM_BIKE 1
-#cmakedefine OQS_ENABLE_KEM_bike1_l1_cpa 1
-#cmakedefine OQS_ENABLE_KEM_bike1_l3_cpa 1
-#cmakedefine OQS_ENABLE_KEM_bike1_l1_fo 1
-#cmakedefine OQS_ENABLE_KEM_bike1_l3_fo 1
+#cmakedefine OQS_ENABLE_KEM_bike_l1 1
+#cmakedefine OQS_ENABLE_KEM_bike_l3 1
 
 #cmakedefine OQS_ENABLE_KEM_FRODOKEM 1
 #cmakedefine OQS_ENABLE_KEM_frodokem_640_aes 1
@@ -75,27 +89,37 @@
 #cmakedefine OQS_ENABLE_SIG_picnic3_L3 1
 #cmakedefine OQS_ENABLE_SIG_picnic3_L5 1
 
-///// OQS_COPY_FROM_PQCLEAN_FRAGMENT_ADD_ALG_ENABLE_DEFINES_START
+///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ALG_ENABLE_DEFINES_START
 
 #cmakedefine OQS_ENABLE_KEM_CLASSIC_MCELIECE 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_348864 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_348864_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_348864f 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_348864f_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_460896 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_460896_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_460896f 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_460896f_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_6688128 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_6688128_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_6688128f 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_6688128f_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_6960119 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_6960119_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_6960119f 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_6960119f_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128_avx 1
 #cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128f 1
+#cmakedefine OQS_ENABLE_KEM_classic_mceliece_8192128f_avx 1
 
 #cmakedefine OQS_ENABLE_KEM_HQC 1
-#cmakedefine OQS_ENABLE_KEM_hqc_128_1_cca2 1
-#cmakedefine OQS_ENABLE_KEM_hqc_192_1_cca2 1
-#cmakedefine OQS_ENABLE_KEM_hqc_192_2_cca2 1
-#cmakedefine OQS_ENABLE_KEM_hqc_256_1_cca2 1
-#cmakedefine OQS_ENABLE_KEM_hqc_256_2_cca2 1
-#cmakedefine OQS_ENABLE_KEM_hqc_256_3_cca2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_128 1
+#cmakedefine OQS_ENABLE_KEM_hqc_128_avx2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_192 1
+#cmakedefine OQS_ENABLE_KEM_hqc_192_avx2 1
+#cmakedefine OQS_ENABLE_KEM_hqc_256 1
+#cmakedefine OQS_ENABLE_KEM_hqc_256_avx2 1
 
 #cmakedefine OQS_ENABLE_KEM_KYBER 1
 #cmakedefine OQS_ENABLE_KEM_kyber_512 1
@@ -137,31 +161,42 @@
 
 #cmakedefine OQS_ENABLE_KEM_SABER 1
 #cmakedefine OQS_ENABLE_KEM_saber_lightsaber 1
+#cmakedefine OQS_ENABLE_KEM_saber_lightsaber_avx2 1
 #cmakedefine OQS_ENABLE_KEM_saber_saber 1
+#cmakedefine OQS_ENABLE_KEM_saber_saber_avx2 1
 #cmakedefine OQS_ENABLE_KEM_saber_firesaber 1
+#cmakedefine OQS_ENABLE_KEM_saber_firesaber_avx2 1
 
 #cmakedefine OQS_ENABLE_SIG_DILITHIUM 1
 #cmakedefine OQS_ENABLE_SIG_dilithium_2 1
 #cmakedefine OQS_ENABLE_SIG_dilithium_2_avx2 1
 #cmakedefine OQS_ENABLE_SIG_dilithium_3 1
 #cmakedefine OQS_ENABLE_SIG_dilithium_3_avx2 1
-#cmakedefine OQS_ENABLE_SIG_dilithium_4 1
-#cmakedefine OQS_ENABLE_SIG_dilithium_4_avx2 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_5 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_5_avx2 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_2_aes 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_2_aes_avx2 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_3_aes 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_3_aes_avx2 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_5_aes 1
+#cmakedefine OQS_ENABLE_SIG_dilithium_5_aes_avx2 1
 
 #cmakedefine OQS_ENABLE_SIG_FALCON 1
 #cmakedefine OQS_ENABLE_SIG_falcon_512 1
+#cmakedefine OQS_ENABLE_SIG_falcon_512_avx2 1
 #cmakedefine OQS_ENABLE_SIG_falcon_1024 1
+#cmakedefine OQS_ENABLE_SIG_falcon_1024_avx2 1
 
 #cmakedefine OQS_ENABLE_SIG_RAINBOW 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Ia_classic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Ia_cyclic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Ia_cyclic_compressed 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_IIIc_classic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_IIIc_cyclic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_IIIc_cyclic_compressed 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Vc_classic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Vc_cyclic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_Vc_cyclic_compressed 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_I_classic 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_I_circumzenithal 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_I_compressed 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_III_classic 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_III_circumzenithal 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_III_compressed 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_V_classic 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_V_circumzenithal 1
+#cmakedefine OQS_ENABLE_SIG_rainbow_V_compressed 1
 
 #cmakedefine OQS_ENABLE_SIG_SPHINCS 1
 #cmakedefine OQS_ENABLE_SIG_sphincs_haraka_128f_robust 1
@@ -236,4 +271,4 @@
 #cmakedefine OQS_ENABLE_SIG_sphincs_shake256_256s_robust_avx2 1
 #cmakedefine OQS_ENABLE_SIG_sphincs_shake256_256s_simple 1
 #cmakedefine OQS_ENABLE_SIG_sphincs_shake256_256s_simple_avx2 1
-///// OQS_COPY_FROM_PQCLEAN_FRAGMENT_ADD_ALG_ENABLE_DEFINES_END
+///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ALG_ENABLE_DEFINES_END

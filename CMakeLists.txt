@@ -14,34 +14,89 @@ endif()
 
 project(liboqs C ASM)
 
+option(OQS_DIST_BUILD "Build distributable library with optimized code for several CPU microarchitectures. Enables run-time CPU feature detection." OFF)
+option(OQS_BUILD_ONLY_LIB "Build only liboqs and do not expose build targets for tests, documentation, and pretty-printing available." OFF)
+set(OQS_MINIMAL_BUILD "" CACHE STRING "Only build specifically listed algorithms.")
+option(OQS_PERMIT_UNSUPPORTED_ARCHITECTURE "Permit compilation on an an unsupported architecture." OFF)
+
+set(OQS_OPT_TARGET auto CACHE STRING "The target microarchitecture for optimization.")
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(OQS_VERSION_TEXT "0.5.0-dev")
+set(OQS_VERSION_TEXT "0.7.0")
 set(OQS_COMPILE_BUILD_TARGET "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_HOST_SYSTEM}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     set(ARCH "x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-    set(ARCH "arm64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
-    set(ARCH "arm")
+    set(ARCH_X86_64 ON)
+    if(${OQS_DIST_BUILD})
+        set(OQS_DIST_X86_64_BUILD ON)
+    endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i586|i686")
+    set(ARCH "i586")
+    set(ARCH_X86 ON)
+    if(${OQS_DIST_BUILD})
+        set(OQS_DIST_X86_BUILD ON)
+    endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8")
+    set(ARCH "arm64v8")
+    set(ARCH_ARM64v8 ON)
+    if(${OQS_DIST_BUILD})
+        set(OQS_DIST_ARM64v8_BUILD ON)
+    endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armel|armhf|armv7|arm32v7")
+    set(ARCH "arm32v7")
+    set(ARCH_ARM32v7 ON)
+    if(${OQS_DIST_BUILD})
+        set(OQS_DIST_ARM32v7_BUILD ON)
+    endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64le")
+    set(ARCH "ppc64le")
+    set(ARCH_PPC64LE ON)
+    if(${OQS_DIST_BUILD})
+        set(OQS_DIST_PPC64LE_BUILD ON)
+    endif()
+elseif(OQS_PERMIT_UNSUPPORTED_ARCHITECTURE)
+    message(WARNING "Unknown or unsupported processor: " ${CMAKE_SYSTEM_PROCESSOR})
+    message(WARNING "Compilation on an unsupported processor should only be used for testing, as it may result an insecure configuration, for example due to variable-time instructions leaking secret information.")
 else()
-    message(FATAL_ERROR "Unknown or unsupported processor: " ${CMAKE_SYSTEM_PROCESSOR})
+    message(FATAL_ERROR "Unknown or unsupported processor: " ${CMAKE_SYSTEM_PROCESSOR} ". Override by setting OQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON")
+endif()
+
+# intentionally don't switch to variables to avoid --warn-uninitialized report
+if(OQS_USE_CPU_EXTENSIONS)
+    message(FATAL_ERROR "OQS_USE_CPU_EXTENSIONS is deprecated")
+endif()
+
+# intentionally don't switch to variables to avoid --warn-uninitialized report
+if(OQS_PORTABLE_BUILD)
+    message(FATAL_ERROR "OQS_PORTABLE_BUILD is deprecated")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    set(OQS_DEBUG_BUILD ON)
+else()
+    set(OQS_DEBUG_BUILD OFF)
 endif()
 
 if(WIN32)
     set(CMAKE_GENERATOR_CC cl)
 endif()
-include(.CMake/compiler_opts.cmake)
 
+include(.CMake/compiler_opts.cmake)
 include(.CMake/alg_support.cmake)
-if(OQS_USE_OPENSSL)
+
+if(${OQS_USE_OPENSSL})
     if(NOT DEFINED OPENSSL_ROOT_DIR)
         if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
-            set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl@1.1")
+            if(EXISTS "/usr/local/opt/openssl@1.1")
+                set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl@1.1")
+            elseif(EXISTS "/opt/homebrew/opt/openssl@1.1")
+                set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl@1.1")
+            endif()
         elseif(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
             set(OPENSSL_ROOT_DIR "/usr")
         endif()
@@ -55,22 +110,23 @@ set(PUBLIC_HEADERS ${PROJECT_SOURCE_DIR}/src/oqs.h
                    ${PROJECT_SOURCE_DIR}/src/common/aes/aes.h
                    ${PROJECT_SOURCE_DIR}/src/common/sha2/sha2.h
                    ${PROJECT_SOURCE_DIR}/src/common/sha3/sha3.h
+                   ${PROJECT_SOURCE_DIR}/src/common/sha3/sha3x4.h
                    ${PROJECT_SOURCE_DIR}/src/kem/kem.h
                    ${PROJECT_SOURCE_DIR}/src/sig/sig.h)
 
-if(OQS_ENABLE_KEM_BIKE)
+if(${OQS_ENABLE_KEM_BIKE})
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/kem/bike/kem_bike.h)
 endif()
-if(OQS_ENABLE_KEM_FRODOKEM)
+if(${OQS_ENABLE_KEM_FRODOKEM})
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/kem/frodokem/kem_frodokem.h)
 endif()
-if(OQS_ENABLE_KEM_SIKE OR OQS_ENABLE_KEM_SIDH)
+if(${OQS_ENABLE_KEM_SIKE} OR ${OQS_ENABLE_KEM_SIDH})
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/kem/sike/kem_sike.h)
 endif()
-if(OQS_ENABLE_SIG_PICNIC)
+if(${OQS_ENABLE_SIG_PICNIC})
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/sig/picnic/sig_picnic.h)
 endif()
-##### OQS_COPY_FROM_PQCLEAN_FRAGMENT_INCLUDE_HEADERS_START
+##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_INCLUDE_HEADERS_START
 if(OQS_ENABLE_KEM_CLASSIC_MCELIECE)
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/kem/classic_mceliece/kem_classic_mceliece.h)
 endif()
@@ -101,7 +157,7 @@ endif()
 if(OQS_ENABLE_SIG_SPHINCS)
     set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_SOURCE_DIR}/src/sig/sphincs/sig_sphincs.h)
 endif()
-##### OQS_COPY_FROM_PQCLEAN_FRAGMENT_INCLUDE_HEADERS_END
+##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_INCLUDE_HEADERS_END
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include/oqs)
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${PUBLIC_HEADERS} ${PROJECT_BINARY_DIR}/include/oqs)
 configure_file(src/oqsconfig.h.cmake ${PROJECT_BINARY_DIR}/include/oqs/oqsconfig.h)
@@ -110,11 +166,12 @@ set(PUBLIC_HEADERS ${PUBLIC_HEADERS} ${PROJECT_BINARY_DIR}/include/oqs/oqsconfig
 include_directories(${PROJECT_BINARY_DIR}/include)
 add_subdirectory(src)
 
-if(NOT OQS_BUILD_ONLY_LIB)
+if(NOT ${OQS_BUILD_ONLY_LIB})
     add_subdirectory(tests)
 
-    find_package(Doxygen)
-    if(DOXYGEN_FOUND)
+    if (NOT CYGWIN)
+      find_package(Doxygen)
+      if(DOXYGEN_FOUND)
         set(DOXYFILE ${PROJECT_SOURCE_DIR}/docs/.Doxyfile)
         add_custom_target(
             gen_docs
@@ -122,12 +179,13 @@ if(NOT OQS_BUILD_ONLY_LIB)
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "Generate API documentation with Doxygen."
             USES_TERMINAL)
+      endif()
     endif()
 
     if(NOT WIN32)
         add_custom_target(
             prettyprint
-            COMMAND ./scripts/run_astyle.sh
+            COMMAND find src tests -name '*.[ch]' | grep -v '/external/' | grep -v 'kem.*/pqclean_' | grep -v 'sig.*/pqclean_' | xargs astyle --options=.astylerc
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             USES_TERMINAL)
     endif()

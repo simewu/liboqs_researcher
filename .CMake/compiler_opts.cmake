@@ -1,7 +1,54 @@
 # SPDX-License-Identifier: MIT
 
-option(OQS_PORTABLE_BUILD "Ensure the resulting library is portable. This implies having run-time checks for CPU extensions." ON)
-option(OQS_BUILD_ONLY_LIB "Build only liboqs and do not expose build targets for tests, documentation, and pretty-printing available." OFF)
+# First we will determine the optimization target.
+#
+# If OQS_DIST_BUILD=ON we need to target a generic CPU for any code
+# that is not protected by runtime CPU feature detection.
+#
+# If OQS_DIST_BUILD=OFF then we will optimize all code for the CPU
+# specified by OQS_OPT_TARGET.
+#
+# If OQS_OPT_TARGET=auto we target the current CPU.
+# If OQS_OPT_TARGET=generic we target a generic CPU.
+# Otherwise we target the specified CPU.
+set(OQS_OPT_FLAG "")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    if(${OQS_DIST_BUILD})
+          set(OQS_OPT_TARGET "generic")
+    endif()
+
+    if(CMAKE_CROSSCOMPILING AND OQS_OPT_TARGET STREQUAL "auto")
+          set(OQS_OPT_TARGET "generic")
+    endif()
+
+    if(OQS_OPT_TARGET STREQUAL "generic")
+        # Assume sensible default like -march=x86-64, -march=armv8-a, etc.
+        set(OQS_OPT_FLAG "")
+    elseif(OQS_OPT_TARGET STREQUAL "auto")
+      if(ARCH_X86_64)
+          set(OQS_OPT_FLAG "-march=native")
+      elseif(ARCH_ARM64v8 AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+          set(OQS_OPT_FLAG "-mcpu=native")
+      elseif(ARCH_ARM64v8 AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+          set(OQS_OPT_FLAG "-mcpu=native")
+      else()
+          message(WARNING "Setting OQS_OPT_TARGET=AUTO may not produce optimized code on this system.")
+      endif()
+    else()
+      if(ARCH_X86_64)
+        set(OQS_OPT_FLAG "-march=${OQS_OPT_TARGET}")
+      elseif(ARCH_ARM64v8 OR ARCH_ARM32v7)
+        set(OQS_OPT_FLAG "-mcpu=${OQS_OPT_TARGET}")
+      endif()
+    endif()
+
+    add_compile_options(${OQS_OPT_FLAG})
+
+    # If this is not a dist build we also need to set the OQS_USE_[EXTENSION] flags
+    if(NOT ${OQS_DIST_BUILD})
+        include(${CMAKE_CURRENT_LIST_DIR}/gcc_clang_intrinsics.cmake)
+    endif()
+endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Werror)
@@ -10,18 +57,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wpedantic)
     add_compile_options(-Wno-unused-command-line-argument)
 
-    if(NOT OQS_BUILD_ONLY_LIB)
+    if(NOT ${OQS_BUILD_ONLY_LIB})
         set(THREADS_PREFER_PTHREAD_FLAG ON)
         find_package(Threads REQUIRED)
         set(OQS_USE_PTHREADS_IN_TESTS 1)
     endif()
 
-    option(OQS_USE_CPU_EXTENSIONS "Enable compile and run-time support for CPU extensions such as AVX2, SSE, etc." ON)
-    if(OQS_USE_CPU_EXTENSIONS)
-        include(${CMAKE_CURRENT_LIST_DIR}/gcc_clang_intrinsics.cmake)
-    endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    if(${OQS_DEBUG_BUILD})
         add_compile_options(-g3)
         add_compile_options(-fno-omit-frame-pointer)
         if(USE_SANITIZER STREQUAL "Address")
@@ -65,18 +107,13 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wfloat-equal)
     add_compile_options(-Wwrite-strings)
 
-    if(NOT OQS_BUILD_ONLY_LIB)
+    if(NOT ${OQS_BUILD_ONLY_LIB})
         set(THREADS_PREFER_PTHREAD_FLAG ON)
         find_package(Threads REQUIRED)
         set(OQS_USE_PTHREADS_IN_TESTS 1)
     endif()
 
-    option(OQS_USE_CPU_EXTENSIONS "Enable compile and run-time support for CPU extensions such as AVX2, SSE, etc." ON)
-    if(OQS_USE_CPU_EXTENSIONS)
-        include(${CMAKE_CURRENT_LIST_DIR}/gcc_clang_intrinsics.cmake)
-    endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    if(${OQS_DEBUG_BUILD})
         add_compile_options (-Wstrict-overflow)
         add_compile_options(-ggdb3)
     else()
@@ -99,6 +136,8 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/wd4146)
     # Need a larger stack for Classic McEliece
     add_link_options(/STACK:8192000)
+    # bring compile options in line with openssl options; link otherwise fails
+    add_compile_options(/MT)
 endif()
 
 if(MINGW OR MSYS OR CYGWIN)

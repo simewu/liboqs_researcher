@@ -1,30 +1,41 @@
-BIKE
-====
+# BIKE
 
-- **Algorithm type**: Key Encapsulation Mechanism
-- **Main cryptographic assumption**: quasi-cyclic syndrome decoding (QCSD)
-- **Scheme authors**: Nicolas Aragon, Paulo Barreto, Slim Bettaieb, Loic Bidoux, Olivier Blazy, Jean-Christophe Deneuville, Phillipe Gaborit, Shay Gueron, Tim Guneysu, Carlos Aguilar Melchor, Rafael Misoczki, Edoardo Persichetti, Nicolas Sendrier, Jean-Pierre Tillich, Gilles Zemor
+- **Algorithm type**: Key encapsulation mechanism.
+- **Main cryptographic assumption**: QC-MDPC (Quasi-Cyclic Moderate Density Parity-Check).
+- **Principal submitters**: Nicolas Aragon, Paulo Barreto, Slim Bettaieb, Loic Bidoux, Olivier Blazy, Jean-Christophe Deneuville, Phillipe Gaborit, Santosh Gosh, Shay Gueron, Tim Güneysu, Carlos Aguilar Melchor, Rafael Misoczki, Edoardo Persichetti, Nicolas Sendrier, Jean-Pierre Tillich, Valentin Vasseur, Gilles Zémor.
 - **Authors' website**: http://bikesuite.org/
-- **Version**: 3.2
-- **Added to liboqs by**: Shay Gueron and Nir Drucker.
+- **Specification version**: 4.1.
+- **Implementation source**: https://github.com/awslabs/bike-kem, which takes it from:
+  - https://bikesuite.org/files/v4.1/Reference_Implementation.2020.10.20.2.zip
+- **Implementation license (SPDX-Identifier)**: Apache-2.0.
 
-Implementation
---------------
+## Parameter set summary
 
-- **Source of implementation**: https://bikesuite.org/additional.html
-- **Implementation version**: BIKE-1 L1/3 with the BGF decoder (as defined in "QC-MDPC decoders with several shades of gray" at https://eprint.iacr.org/2019/1423) 
-  - BIKE-1-FO L1/3 that matches [BIKE's v3.2](https://bikesuite.org/files/round2/spec/BIKE-Spec-2020.02.07.1.pdf)
-  - BIKE-1-CPA L1/3 that matches BIKE Round-1 (and BIKE v3.0) for backward compatibility
-- **License**: Apache 2.0 License
-- **Constant-time**: Yes
-- **Optimizations**: Portable C with optional use (selected at compile-time, enabled by default if available) of AVX2 instructions
+|  Parameter set  | Security model   |   Claimed NIST Level |   Public key size (bytes) |   Secret key size (bytes) |   Ciphertext size (bytes) |   Shared secret size (bytes) |
+|:---------------:|:-----------------|---------------------:|--------------------------:|--------------------------:|--------------------------:|-----------------------------:|
+|     BIKE-L1     | IND-CPA          |                    1 |                      1541 |                      5223 |                      1573 |                           32 |
+|     BIKE-L3     | IND-CPA          |                    3 |                      3083 |                     10105 |                      3115 |                           32 |
 
-Parameter sets
---------------
+## BIKE-L1 implementation characteristics
 
-| Parameter set       | Security model | Claimed NIST security level | Public key size (bytes) | Secret key size (bytes) | Ciphertext size (bytes) | Shared secret size (bytes) |
-|---------------------|:--------------:|:---------------------------:|:-----------------------:|:-----------------------:|:-----------------------:|:--------------------------:|
-| BIKE1-L1-CPA        |     IND-CPA    |              1              |           2542          |          3110          |           2542          |             32             |
-| BIKE1-L3-CPA        |     IND-CPA    |              3              |           4964          |          5788          |           4964          |             32             |
-| BIKE1-L1-FO         |     IND-CCA    |              1              |           2946          |          6460          |           2946          |             32             |
-| BIKE1-L3-FO         |     IND-CCA    |              3              |           6206          |         13236          |           6206          |             32             |
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?‡   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:----------------------|
+|          master          | All                         | All                             | None                    | True                               | True                                           | False                 |
+|          master          | x86\_64                     | Linux,Darwin                    | AVX2,AVX512,PCLMUL,SSE2 | True                               | True                                           | False                 |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+ ‡For an explanation of what this denotes, consult the [Explanation of Terms](#explanation-of-terms) section at the end of this file.
+
+## BIKE-L3 implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|          master          | All                         | All                             | None                    | True                               | True                                           | False                |
+|          master          | x86\_64                     | Linux,Darwin                    | AVX2,AVX512,PCLMUL,SSE2 | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Explanation of Terms
+
+- **Large Stack Usage**: Implementations identified as having such may cause failures when running in threads or in constrained environments.

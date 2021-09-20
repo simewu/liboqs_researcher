@@ -33,7 +33,11 @@ static AES256_CTR_DRBG_struct DRBG_ctx;
 static void AES256_CTR_DRBG_Update(unsigned char *provided_data, unsigned char *Key, unsigned char *V);
 
 #ifdef OQS_USE_OPENSSL
+# if defined(_MSC_VER)
+__declspec(noreturn)
+# else
 __attribute__((noreturn))
+# endif
 static void handleErrors(void) {
 	ERR_print_errors_fp(stderr);
 	abort();
@@ -67,7 +71,7 @@ static void AES256_ECB(unsigned char *key, unsigned char *ctr, unsigned char *bu
 	EVP_CIPHER_CTX_free(ctx);
 #else
 	void *schedule = NULL;
-	OQS_AES256_ECB_load_schedule(key, &schedule, 1);
+	OQS_AES256_ECB_load_schedule(key, &schedule);
 	OQS_AES256_ECB_enc(ctr, 16, key, buffer);
 	OQS_AES256_free_schedule(schedule);
 #endif
