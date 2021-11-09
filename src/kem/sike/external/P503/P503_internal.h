@@ -9,7 +9,7 @@
 
 #include "../config.h"
 
-#if (TARGET == TARGET_AMD64) || (TARGET == TARGET_ARM64) || (TARGET == TARGET_S390X)
+#if (TARGET == TARGET_AMD64) || (TARGET == TARGET_ARM64) || (TARGET == TARGET_S390X) || (TARGET == TARGET_PPC64LE)
 #define NWORDS_FIELD 8    // Number of words of a 503-bit field element
 #define p503_ZERO_WORDS 3 // Number of "0" digits in the least significant part of p503 + 1
 #elif (TARGET == TARGET_x86) || (TARGET == TARGET_ARM)
@@ -74,15 +74,17 @@
 #define DLEN_3 ((OBOB_EXPON + W_3 - 1) / W_3) // ceil(eB/W_3)
 // Use compressed tables: FULL_SIGNED
 #define COMPRESSED_TABLES
-#define ELL2_FULL_SIGNED    // Uses signed digits to reduce table size by half
+#define ELL2_TORUS
 #define ELL3_FULL_SIGNED    // Uses signed digits to reduce table size by half
 // Length of the optimal strategy path for Pohlig-Hellman
 #ifdef COMPRESSED_TABLES
-  #ifdef ELL2_FULL_SIGNED
-    #if W_2 == 5
-      #define PLEN_2 51
-    #endif
+  #if W_2 == 5
+     #define PLEN_2 51
   #endif
+  #ifdef ELL2_TORUS
+     #define W_2_1 4
+  #endif
+
   #ifdef ELL3_FULL_SIGNED
     #if W_3 == 3
       #define PLEN_3 54

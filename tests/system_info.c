@@ -42,48 +42,130 @@ static void print_platform_info(void) {
 #include <openssl/opensslv.h>
 #endif
 
-#if defined(OQS_USE_CPU_EXTENSIONS) && defined(OQS_PORTABLE_BUILD)
-#define C_OR_NI(stmt_c, stmt_ni) \
-    OQS_CPU_EXTENSIONS available_cpu_extensions = OQS_get_available_CPU_extensions(); \
-    if (available_cpu_extensions.AES_ENABLED) { \
+#if defined(OQS_DIST_X86_64_BUILD)
+#define C_OR_NI_OR_ARM(stmt_c, stmt_ni, stmt_arm) \
+    if (OQS_CPU_has_extension(OQS_CPU_EXT_AES)) { \
         stmt_ni; \
     } else { \
         stmt_c; \
     }
-#elif defined(OQS_USE_CPU_EXTENSIONS) /* && !defined(OQS_PORTABLE_BUILD) */
-#define  C_OR_NI(stmt_c, stmt_ni) \
+#elif defined(OQS_USE_AES_INSTRUCTIONS)
+#define  C_OR_NI_OR_ARM(stmt_c, stmt_ni, stmt_arm) \
     stmt_ni;
-#else /* !defined(OQS_USE_CPU_EXTENSIONS) */
-#define  C_OR_NI(stmt_c, stmt_ni) \
+#elif defined(OQS_USE_ARM_AES_INSTRUCTIONS)
+#define C_OR_NI_OR_ARM(stmt_c, stmt_ni, stmt_arm) \
+    stmt_arm;
+#else
+#define  C_OR_NI_OR_ARM(stmt_c, stmt_ni, stmt_arm) \
     stmt_c;
 #endif
 
 /* Display all active CPU extensions: */
 static void print_cpu_extensions(void) {
-#if defined(OQS_USE_CPU_EXTENSIONS) && defined(OQS_PORTABLE_BUILD)
-	/* Make CPU features struct iterable */
-	typedef union ext_u {
-		OQS_CPU_EXTENSIONS ext_x;
-		unsigned int ext_a[sizeof(OQS_CPU_EXTENSIONS) / sizeof(unsigned int)];
-	} OQS_CPU_EXTENSIONS_UNION;
-
-	OQS_CPU_EXTENSIONS_UNION ext_u;
-	ext_u.ext_x = OQS_get_available_CPU_extensions();
-	printf("CPU exts active:  ");
-	unsigned int it = sizeof(ext_u.ext_a) / sizeof(ext_u.ext_a[0]);
-	for (unsigned int i = 0; i < it; i++) {
-		if (ext_u.ext_a[i]) {
-			const char *aname = OQS_get_cpu_extension_name(i);
-			if ((strlen(aname) > 0) && (i != it - 1)) {
-				printf("%s-", aname);
-			} else {
-				printf("%s", aname);
-			}
-		}
+#if defined(OQS_DIST_BUILD)
+	printf("CPU exts active: ");
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_ADX)) {
+		printf(" ADX");
 	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_AES)) {
+		printf(" AES");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_AVX)) {
+		printf(" AVX");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_AVX2)) {
+		printf(" AVX2");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_AVX512)) {
+		printf(" AVX512");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_BMI1)) {
+		printf(" BMI1");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_BMI2)) {
+		printf(" BMI2");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_PCLMULQDQ)) {
+		printf(" PCLMULQDQ");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_VPCLMULQDQ)) {
+		printf(" VPCLMULQDQ");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_POPCNT)) {
+		printf(" POPCNT");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_SSE)) {
+		printf(" SSE");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_SSE2)) {
+		printf(" SSE2");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_SSE3)) {
+		printf(" SSE3");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_ARM_AES)) {
+		printf(" AES");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_ARM_SHA2)) {
+		printf(" SHA2");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_ARM_SHA3)) {
+		printf(" SHA3");
+	}
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_ARM_NEON)) {
+		printf(" NEON");
+	}
+#else
+	printf("CPU exts compile-time: ");
+#ifdef OQS_USE_ADX_INSTRUCTIONS
+	printf(" ADX");
+#endif
+#ifdef OQS_USE_AES_INSTRUCTIONS
+	printf(" AES");
+#endif
+#ifdef OQS_USE_AVX_INSTRUCTIONS
+	printf(" AVX");
+#endif
+#ifdef OQS_USE_AVX2_INSTRUCTIONS
+	printf(" AVX2");
+#endif
+#ifdef OQS_USE_AVX512_INSTRUCTIONS
+	printf(" AVX512");
+#endif
+#ifdef OQS_USE_BMI1_INSTRUCTIONS
+	printf(" BMI1");
+#endif
+#ifdef OQS_USE_BMI2_INSTRUCTIONS
+	printf(" BMI2");
+#endif
+#ifdef OQS_USE_PCLMULQDQ_INSTRUCTIONS
+	printf(" PCLMULQDQ");
+#endif
+#ifdef OQS_USE_POPCNT_INSTRUCTIONS
+	printf(" POPCNT");
+#endif
+#ifdef OQS_USE_SSE_INSTRUCTIONS
+	printf(" SSE");
+#endif
+#ifdef OQS_USE_SSE2_INSTRUCTIONS
+	printf(" SSE2");
+#endif
+#ifdef OQS_USE_SSE3_INSTRUCTIONS
+	printf(" SSE3");
+#endif
+#ifdef OQS_USE_ARM_AES_INSTRUCTIONS
+	printf(" AES");
+#endif
+#ifdef OQS_USE_ARM_SHA2_INSTRUCTIONS
+	printf(" SHA2");
+#endif
+#ifdef OQS_USE_ARM_SHA3_INSTRUCTIONS
+	printf(" SHA3");
+#endif
+#ifdef OQS_USE_ARM_NEON_INSTRUCTIONS
+	printf(" NEON");
+#endif
 	printf("\n");
-#else /* no extensions active */
-	printf("CPU exts active:  None\n");
 #endif
 }
 
@@ -100,13 +182,16 @@ static void print_oqs_configuration(void) {
 #if defined(OQS_USE_AES_OPENSSL)
 	printf("AES:              OpenSSL\n");
 #else
-	C_OR_NI(
+	C_OR_NI_OR_ARM(
 	    printf("AES:              C\n"),
-	    printf("AES:              NI\n")
+	    printf("AES:              NI\n"),
+	    printf("AES:              C and ARM CRYPTO extensions\n")
 	)
 #endif
 #if defined(OQS_USE_SHA2_OPENSSL)
 	printf("SHA-2:            OpenSSL\n");
+#elif defined(OQS_USE_ARM_SHA2_INSTRUCTIONS)
+	printf("SHA-2:            C and ARM CRYPTO extensions\n");
 #else
 	printf("SHA-2:            C\n");
 #endif

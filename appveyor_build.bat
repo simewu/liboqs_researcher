@@ -1,8 +1,13 @@
 @echo off
+IF %COMPILER%==cygwin (
+    @echo on
+    SET "PATH=C:\cywin64\bin;c:\cygwin64;%PATH%"
+    c:\cygwin64\bin\bash.exe -lc "setup-x86_64.exe -qnNdO -R C:/cygwin64 -l C:/cygwin/var/cache/setup -P openssl -P libssl-devel -P ninja -P cmake -P gcc && cd ${APPVEYOR_BUILD_FOLDER} && openssl version && cygcheck -c && pwd && mkdir build && cd build && cmake .. -GNinja -DCMAKE_C_COMPILER=gcc -DOQS_DIST_BUILD=ON -DOQS_ENABLE_SIG_SPHINCS=OFF -DOQS_ENABLE_SIG_RAINBOW=OFF -DBUILD_SHARED_LIBS=%BUILD_SHARED% -DOQS_USE_OPENSSL=%OQS_USE_OPENSSL% && ninja "
+)
 IF %COMPILER%==msys2 (
     @echo on
     SET "PATH=C:\msys64\mingw64\bin;%PATH%"
-    bash -lc "cd ${APPVEYOR_BUILD_FOLDER} && mkdir build && cd build && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DOQS_ENABLE_SIG_SPHINCS=OFF -DOQS_ENABLE_SIG_RAINBOW=OFF -DBUILD_SHARED_LIBS=%BUILD_SHARED% && ninja"
+    bash -lc "cd ${APPVEYOR_BUILD_FOLDER} && mkdir build && cd build && cmake .. -GNinja -DOQS_DIST_BUILD=ON -DOQS_ENABLE_SIG_SPHINCS=OFF -DOQS_ENABLE_SIG_RAINBOW=OFF -DBUILD_SHARED_LIBS=%BUILD_SHARED% -DOQS_USE_OPENSSL=%OQS_USE_OPENSSL% && ninja"
 )
 IF %COMPILER%==msvc2019 (
     @echo on
@@ -10,6 +15,6 @@ IF %COMPILER%==msvc2019 (
     mkdir build
     cd build
     REM SPHINCS and Rainbow cause a big slowdown in the tests
-    cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DOQS_ENABLE_SIG_SPHINCS=OFF -DOQS_ENABLE_SIG_RAINBOW=OFF -DBUILD_SHARED_LIBS=%BUILD_SHARED%
+    cmake .. -GNinja -DOQS_DIST_BUILD=ON -DOQS_ENABLE_SIG_SPHINCS=OFF -DOQS_ENABLE_SIG_RAINBOW=OFF -DBUILD_SHARED_LIBS=%BUILD_SHARED% -DOQS_USE_OPENSSL=%OQS_USE_OPENSSL%
     ninja
 )

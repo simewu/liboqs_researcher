@@ -41,6 +41,11 @@ static inline uint64_t ATTR_CONST bswap64(uint64_t x) {
 }
 #endif
 
+#if defined(__CYGWIN__)
+#include <endian.h>
+#define HAVE_HOSTSWAP
+#endif
+
 /* Linux / GLIBC */
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
@@ -129,6 +134,16 @@ static inline uint64_t ATTR_CONST bswap64(uint64_t x) {
 #define PICNIC_IS_BIG_ENDIAN
 #elif defined(__LITTLE_ENDIAN__)
 #define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#endif
+
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
+#if defined(__ORDER_BIG_ENDIAN__) && defined(__ORDER_LITTLE_ENDIAN__)
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
 #endif
 #endif
 

@@ -11,12 +11,12 @@ import glob
 @helpers.filtered_test
 @pytest.mark.skipif(sys.platform.startswith("win"), reason="Not needed on Windows")
 def test_namespace():
-    liboqs = glob.glob('build/lib/liboqs.*')[0]
-    if liboqs == 'build/lib/liboqs.dylib':
+    liboqs = glob.glob(helpers.get_current_build_dir_name()+'/lib/liboqs.*')[0]
+    if liboqs == helpers.get_current_build_dir_name()+'/lib/liboqs.dylib':
         out = helpers.run_subprocess(
             ['nm', '-g', liboqs]
         )
-    elif liboqs == 'build/lib/liboqs.so':
+    elif liboqs == helpers.get_current_build_dir_name()+'/lib/liboqs.so':
         out = helpers.run_subprocess(
             ['nm', '-D', liboqs]
         )
@@ -32,7 +32,7 @@ def test_namespace():
             symbols.append(line)
 
     # ideally this would be just ['oqs', 'pqclean'], but contains exceptions (e.g., providing compat implementations of unavailable platform functions)
-    namespaces = ['oqs', 'pqclean', 'keccak', 'pqcrystals', 'aligned_alloc', 'aligned_free', 'explicit_bzero', 'timingsafe_bcmp', 'init', 'fini', 'seedexpander']
+    namespaces = ['oqs', 'pqclean', 'keccak', 'pqcrystals', 'init', 'fini', 'seedexpander', '__x86.get_pc_thunk']
     non_namespaced = []
 
     for symbolstr in symbols:

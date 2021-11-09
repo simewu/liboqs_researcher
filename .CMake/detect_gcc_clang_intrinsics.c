@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 int main(void) {
+#if defined(__ADX__)
+	printf("ADX;");
+#endif
 #if defined(__AES__)
 	printf("AES;");
 #endif
@@ -21,6 +24,9 @@ int main(void) {
 #if defined(__AVX512F__)
 	printf("AVX512F;");
 #endif
+#if defined(__VPCLMULQDQ__)
+	printf("VPCLMULQDQ;");
+#endif
 #if defined(__BMI__)
 	printf("BMI1;");
 #endif
@@ -31,7 +37,7 @@ int main(void) {
 	printf("FMA;");
 #endif
 #if defined(__PCLMUL__)
-	printf("PCLMUL;");
+	printf("PCLMULQDQ;");
 #endif
 #if defined(__POPCNT__)
 	printf("POPCNT;");
@@ -44,6 +50,18 @@ int main(void) {
 #endif
 #if defined(__SSE3__)
 	printf("SSE3;");
+#endif
+#if defined(__ARM_FEATURE_AES)
+	printf("ARM_AES;");
+#endif
+#if (defined(__APPLE__) && defined(__aarch64__)) || defined(__ARM_FEATURE_SHA2)
+	printf("ARM_SHA2;");
+#endif
+#if defined(__ARM_FEATURE_SHA3)
+	printf("ARM_SHA3;");
+#endif
+#if defined(__ARM_NEON)
+	printf("ARM_NEON;");
 #endif
 	return 0;
 }

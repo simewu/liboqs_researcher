@@ -157,11 +157,13 @@ static const uint64_t Montgomery_RB1[NWORDS64_FIELD] = {0x1A55482318541298, 0x70
 // constant Montgomery_RB2 = (-Bob_order)^-1 mod 2^NBITS_ORDER
 static const uint64_t Montgomery_RB2[NWORDS64_FIELD] = {0x48062A91D3AB563D, 0x6CE572751303C2F5, 0x5D1319F3F160EC9D, 0xE35554E8C2D5623A, 0xCA29300232BC79A5, 0x8AAD843D646D78C5};
 
+/* OQS note: unused
 // 1/3 mod p
 static const uint64_t threeinv[NWORDS64_FIELD] = {0x555555555556188F, 0x5555555555555555, 0x5555555555555555, 0x5555555555555555,
                                                   0x5555555555555555, 0x8105555555555555, 0x1C6290A167C97977, 0xCDD287EA6A6FB6F0,
                                                   0x42DF3D3B8EC96F64, 0x198C3C1346027872, 0xB0528624270642A3, 0xF1E61944CA0
                                                  };
+*/
 
 // Fixed parameters for isogeny tree computation
 static const unsigned int strat_Alice[MAX_Alice - 1] = {
@@ -190,7 +192,7 @@ static const unsigned int strat_Bob[MAX_Bob - 1] = {
 
 static const unsigned int ph2_path[PLEN_2] = { // w_2 = 4
 #ifdef COMPRESSED_TABLES
-  #ifdef ELL2_FULL_SIGNED
+  #ifdef ELL2_TORUS
     #if W_2 == 4
       0, 0, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 9, 9, 10, 11, 12, 13, 13, 13, 14, 14, 15, 16, 17, 18, 19, 19, 19, 19, 20, 21, 22, 22, 23, 24, 25, 26, 27, 27, 28, 28, 28, 28, 28, 29, 30, 31, 32, 33, 34, 34, 35, 36, 37, 38, 39, 40, 40, 40, 40, 41, 42, 42, 42, 42, 42, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 52, 53, 54, 55, 56, 57, 58, 59, 59, 59, 59, 59, 59, 59
     #endif
@@ -224,12 +226,8 @@ static const uint64_t u_entang[2 * NWORDS64_FIELD] = {
 	0xaa4f63c86eb8d8cd, 0xd2ef2f7e7e9e49a0, 0x913b6f6558b89c5c, 0x99496873a40ed2ad, 0x21ef24d8ea258fd2, 0x00005ab64979cbc4
 };
 
-static const uint64_t u0_entang[2 * NWORDS64_FIELD] = {
-	0x00000000000249ad, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x8310000000000000,
-	0x5527b1e4375c6c66, 0x697797bf3f4f24d0, 0xc89db7b2ac5c4e2e, 0x4ca4b439d2076956, 0x10f7926c7512c7e9, 0x00002d5b24bce5e2,
-	0x00000000000249ad, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x8310000000000000,
-	0x5527b1e4375c6c66, 0x697797bf3f4f24d0, 0xc89db7b2ac5c4e2e, 0x4ca4b439d2076956, 0x10f7926c7512c7e9, 0x00002d5b24bce5e2
-};
+// Elligator constant U = min{u0+k} for k=1,2... such that u0+k is a square in F_p^2 for generating 3^n torsion bases
+static const uint64_t U3[2*NWORDS64_FIELD] = {0x926B5,0x0,0x0,0x0,0x0,0x1D90000000000000,0x70B2310B937938F1,0xCB48C3E2E944C6CA,0x1A284662DA855042,0xAD301BE2EB6B4E13,0x35CBB9123C90433E,0x4586BDB1A06C,0x249AD,0x0,0x0,0x0,0x0,0x8310000000000000,0x5527B1E4375C6C66,0x697797BF3F4F24D0,0xC89DB7B2AC5C4E2E,0x4CA4B439D2076956,0x10F7926C7512C7E9,0x2D5B24BCE5E2};
 
 // Tables for quadratic residues and quadratic non residues v with 17 elements each.
 

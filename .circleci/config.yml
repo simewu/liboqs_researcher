@@ -4,6 +4,17 @@ require_stylecheck: &require_stylecheck
   requires:
     - stylecheck
 
+require_buildcheck: &require_buildcheck
+  requires:
+    - stylecheck
+    - buildcheck
+
+require_testapproval: &require_testapproval
+  requires:
+    - stylecheck
+    - buildcheck
+    - testapproval
+
 # CircleCI doesn't handle large file sets properly for local builds
 # https://github.com/CircleCI-Public/circleci-cli/issues/281#issuecomment-472808051
 localCheckout: &localCheckout
@@ -18,10 +29,11 @@ jobs:
   stylecheck:
     description: Validate formatting of code and documentation
     docker:
-      - image: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-        auth:
-          username: $DOCKER_LOGIN
-          password: $DOCKER_PASSWORD
+      - image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+# Re-enable iff docker enforces rate limitations without auth:
+#        auth:
+#          username: $DOCKER_LOGIN
+#          password: $DOCKER_PASSWORD
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
@@ -31,8 +43,43 @@ jobs:
           name: Check that doxygen can parse the documentation
           command: mkdir -p build/docs && doxygen docs/.Doxyfile
 
-  linux_x64:
-    description: A template for running liboqs tests on x64 Linux Docker VMs
+  buildcheck:
+    description: Test that we can build a single KEM/Signature pair as part of a minimal build.
+    parameters:
+      CONTAINER:
+        description: "The docker container to use."
+        type: string
+      CMAKE_ARGS:
+        description: "Arguments to pass to CMake."
+        type: string
+        default: ''
+      KEM_NAME:
+        description: "The KEM to build."
+        type: string
+      SIG_NAME:
+        description: "The signature scheme to build."
+        type: string
+    docker:
+      - image: << parameters.CONTAINER >>
+    steps:
+      - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
+      - run:
+          name: Configure
+          command: |2
+            mkdir build && cd build && source ~/.bashrc && \
+            cmake .. --warn-uninitialized \
+                     -GNinja << parameters.CMAKE_ARGS >> \
+                     -DOQS_MINIMAL_BUILD="OQS_ENABLE_KEM_<< parameters.KEM_NAME >>;OQS_ENABLE_SIG_<< parameters.SIG_NAME >>" \
+                     > config.log 2>&1 && \
+            cat config.log && \
+            cmake -LA .. && ! (grep "uninitialized variable" config.log)
+      - run:
+          name: Build
+          command: ninja
+          working_directory: build
+
+  linux_oqs:
+    description: A template for running liboqs tests on Linux Docker VMs
     parameters:
       CONTAINER:
         description: "The docker container to use."
@@ -47,11 +94,16 @@ jobs:
         # Not every executor handles --numprocesses=auto being passed to pytest well
         # See https://github.com/open-quantum-safe/liboqs/issues/738#issuecomment-621394744
         default: --numprocesses=auto
+      SKIP_ALGS:
+        description: "Algorithms not to test in test_constant_time."
+        type: string
+        default: ''
     docker:
       - image: << parameters.CONTAINER >>
-        auth:
-          username: $DOCKER_LOGIN
-          password: $DOCKER_PASSWORD
+# Re-enable iff docker enforces rate limitations without auth:
+#        auth:
+#          username: $DOCKER_LOGIN
+#          password: $DOCKER_PASSWORD
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
@@ -63,41 +115,51 @@ jobs:
           working_directory: build
       - run:
           name: Run tests
-          command: python3 -m pytest --verbose --ignore=tests/test_code_conventions.py --junitxml=build/test-results/pytest/test-results.xml << parameters.PYTEST_ARGS >>
+          no_output_timeout: 1h
+          command: mkdir -p tmp && python3 -m pytest --verbose --ignore=tests/test_code_conventions.py --junitxml=build/test-results/pytest/test-results.xml << parameters.PYTEST_ARGS >>
+          environment:
+             SKIP_ALGS: << parameters.SKIP_ALGS >>
       - store_test_results: # Note that this command will fail when running CircleCI locally, that is expected behaviour
           path: build/test-results
       - store_artifacts:
           path: build/test-results
 
-  arm_emulated:
-    description: A template for running liboqs tests on emulated ARM Docker VMs
+  arm_machine:
+    description: A template for running liboqs tests on ARM(presently only 64) machines
     parameters:
-      ARCH:
-        description: "The desired ARM architecture to be emulated."
-        type: string
       CMAKE_ARGS:
         description: "Arguments to pass to CMake."
         type: string
+      PYTEST_ARGS:
+        description: "Arguments to pass to pytest."
+        type: string
+        # Not every executor handles --numprocesses=auto being passed to pytest well
+        # See https://github.com/open-quantum-safe/liboqs/issues/738#issuecomment-621394744
+        default: --numprocesses=auto
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
     steps:
       - checkout
+      # It seems the machine doesn't contain all preprequisites, and we don't have permission to add them explicitly, 
+      # so we can only run in a prepared ARM64 CI image
       - run:
-          name: Install the emulation handlers
-          command: docker run --rm --privileged multiarch/qemu-user-static:register --reset
-      - run:
-          name: Run the tests in a container
-          command: |
-            docker run -e SKIP_TESTS=style --rm -v `pwd`:`pwd` -w `pwd` openquantumsafe/ci-debian-buster-<< parameters.ARCH >>:latest /bin/bash -c "
-            uname -a &&
-            file /bin/ls &&
-            mkdir build &&
-            (cd build &&
-            cmake -GNinja << parameters.CMAKE_ARGS >> .. && cmake -LA .. &&
-            ninja) &&
-            python3 -m pytest --verbose --numprocesses=auto --ignore=tests/test_code_conventions.py --junitxml=build/test-results/pytest/test-results.xml
-            "
-      - store_test_results:
+          name: Build and run tests in docker 
+          no_output_timeout: 1h
+          command: |2
+            docker run -it -e CMAKE_ARGS="<< parameters.CMAKE_ARGS >>" \
+                           -e PYTEST_ARGS="<< parameters.PYTEST_ARGS >>" \
+                           -v `pwd`:/root/project \
+                           openquantumsafe/ci-ubuntu-focal-arm64:latest bash \
+                           -c "cd /root/project && \
+                               uname -a && \
+                               mkdir build && cd build && source ~/.bashrc && \
+                               cmake -GNinja $CMAKE_ARGS .. && cmake -LA .. && ninja && \
+                               cd .. && mkdir -p tmp && \
+                               python3 -m pytest --verbose \
+                                                 --ignore=tests/test_code_conventions.py \
+                                                 --junitxml=build/test-results/pytest/test-results.xml $PYTEST_ARGS"
+      - store_test_results: # Note that this command will fail when running CircleCI locally, that is expected behaviour
           path: build/test-results
       - store_artifacts:
           path: build/test-results
@@ -118,7 +180,7 @@ jobs:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
           name: Install dependencies
-          command: brew unlink python@2 && env HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake ninja && pip3 install pytest pytest-xdist
+          command: brew unlink python@2 && env HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake ninja && pip3 install pytest pytest-xdist pyyaml
       - run:
           name: Get system information
           command: sysctl -a | grep machdep.cpu
@@ -131,7 +193,7 @@ jobs:
           working_directory: build
       - run:
           name: Run tests
-          command: python3 -m pytest --verbose --ignore=tests/test_code_conventions.py --junitxml=build/test-results/pytest/test-results.xml << parameters.PYTEST_ARGS >>
+          command: mkdir tmp && python3 -m pytest --verbose --ignore=tests/test_code_conventions.py --junitxml=build/test-results/pytest/test-results.xml << parameters.PYTEST_ARGS >>
       - store_test_results: # Note that this command will fail when running CircleCI locally, that is expected behaviour
           path: build/test-results
       - store_artifacts:
@@ -140,156 +202,189 @@ jobs:
   trigger-downstream-ci:
     docker:
       - image: cimg/base:2020.01
-        auth:
-          username: $DOCKER_LOGIN
-          password: $DOCKER_PASSWORD
+# Re-enable iff docker enforces rate limitations without auth:
+#        auth:
+#          username: $DOCKER_LOGIN
+#          password: $DOCKER_PASSWORD
     steps:
       - run:
           name: Trigger OQS-OpenSSL CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
                  --header "Content-Type: application/json" \
-                 -d '{ "branch": "OQS-OpenSSL_1_1_1-stable", "parameters": { "run_downstream_tests": true } }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/openssl/pipeline
+                 --data '{ "branch": "OQS-OpenSSL_1_1_1-stable", "parameters": { "run_downstream_tests": true } }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/openssl/pipeline | tee curl_out \
+            && grep -q "201" curl_out
+
       - run:
           name: Trigger OQS-BoringSSL CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
                  --header "Content-Type: application/json" \
-                 -d '{ "branch": "master", "parameters": { "run_downstream_tests": true } }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/boringssl/pipeline
+                 --data '{ "branch": "master", "parameters": { "run_downstream_tests": true } }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/boringssl/pipeline | tee curl_out \
+            && grep -q "201" curl_out
       - run:
           name: Trigger OQS-OpenSSH CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
                  --header "Content-Type: application/json" \
-                 -d '{ "branch": "OQS-master", "parameters": { "run_downstream_tests": true } }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/openssh/pipeline
+                 --data '{ "branch": "OQS-v8", "parameters": { "run_downstream_tests": true } }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/openssh/pipeline | tee curl_out \
+            && grep -q "201" curl_out
       - run:
           name: Trigger liboqs-dotnet CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
                  --header "Content-Type: application/json" \
-                 -d '{ "branch": "master" }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-dotnet/pipeline
+                 --data '{ "branch": "master" }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-dotnet/pipeline | tee curl_out \
+            && grep -q "201" curl_out
       - run:
           name: Trigger liboqs-java CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
                  --header "Content-Type: application/json" \
-                 -d '{ "branch": "master" }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-java/pipeline
+                 --data '{ "branch": "master" }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-java/pipeline | tee curl_out \
+            && grep -q "201" curl_out
       - run:
           name: Trigger liboqs-python CI
-          command: |
-            curl -u ${BUILD_TRIGGER_TOKEN}: \
-                 -X POST \
-                 --header "Content-Type: application/json" \
-                 -d '{ "branch": "master" }' \
-                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-python/pipeline
+          command: |2
+            curl --silent \
+                 --write-out "\n%{response_code}\n" \
+                 --user ${BUILD_TRIGGER_TOKEN}: \
+                 --request POST \
+                 --data '{ "branch": "main" }' \
+                 https://circleci.com/api/v2/project/gh/open-quantum-safe/liboqs-python/pipeline | tee curl_out \
+            && grep -q "201" curl_out
 
 workflows:
   version: 2.1
   build:
     when:
-      not:
-        equal: [ master, << pipeline.git.branch >> ]
+      and:
+        - not:
+            equal: [ main, << pipeline.git.branch >> ]
+        - not:
+            matches: { pattern: "^ghactionsonly-.*", value: << pipeline.git.branch >> }
     jobs:
       - stylecheck
-      - linux_x64:
+      - buildcheck:
           <<: *require_stylecheck
-          name: alpine-noopenssl
           context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-alpine-amd64:latest
-          CMAKE_ARGS: -DCMAKE_BUILD_TYPE=Release -DOQS_USE_OPENSSL=OFF
-      - linux_x64:
-          <<: *require_stylecheck
-          name: alpine
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-alpine-amd64:latest
-          CMAKE_ARGS: -DCMAKE_BUILD_TYPE=Release -DOQS_USE_OPENSSL=ON -DBUILD_SHARED_LIBS=ON
-      - linux_x64:
-          <<: *require_stylecheck
-          name: centos-8
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-centos-8-amd64:latest
-          CMAKE_ARGS: -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release -DOQS_PORTABLE_BUILD=OFF
-      - linux_x64:
-          <<: *require_stylecheck
-          name: debian-buster
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-debian-buster-amd64:latest
-      - linux_x64:
-          <<: *require_stylecheck
-          name: ubuntu-bionic-noopenssl
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-          CMAKE_ARGS: -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_BUILD_TYPE=Release -DOQS_USE_OPENSSL=OFF
-      - linux_x64:
-          <<: *require_stylecheck
-          name: ubuntu-bionic-shared-noopenssl
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-          CMAKE_ARGS: -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_BUILD_TYPE=Release -DOQS_USE_OPENSSL=OFF -DBUILD_SHARED_LIBS=ON
-          PYTEST_ARGS: --ignore=tests/test_namespace.py --numprocesses=auto
-      - linux_x64:
-          <<: *require_stylecheck
-          name: ubuntu-bionic-clang9
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-          CMAKE_ARGS: -DCMAKE_C_COMPILER=clang-9
-      - linux_x64:
-          <<: *require_stylecheck
-          name: address-sanitizer
-          context: openquantumsafe
-          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-          CMAKE_ARGS: -DCMAKE_C_COMPILER=clang-9 -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZER=Address
-      # Disabling for now due to https://github.com/open-quantum-safe/liboqs/issues/791
-      #- linux_x64:
-      #    <<: *exclude_master
-      #    name: undefined-sanitizer
+          CONTAINER: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+          KEM_NAME: kyber_768
+          SIG_NAME: dilithium_3
+      # Disabling testapproval as no jobs currently need it.
+      #- testapproval:
+      #    <<: *require_buildcheck
+      #    type: approval
+      # Disabling centos-8 and debian-buster.
+      # Re-enable if specific configurations (package versions etc) that need to be tested are identified.
+      #- linux_oqs:
+      #    <<: *require_buildcheck
+      #    name: centos-8
       #    context: openquantumsafe
-      #    CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
-      #    CMAKE_ARGS: -DCMAKE_C_COMPILER=clang-9 -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZER=Undefined
-           # Normally the linux tests are run with 35 processes, but that
-           # exhausts memory for this test
-      #    PYTEST_ARGS: --numprocesses=1
-
-      # SPHINCS exhausts memory on CircleCI servers
-      # for these configurations.
-      - arm_emulated:
-          <<: *require_stylecheck
+      #    CONTAINER: openquantumsafe/ci-centos-8-amd64:latest
+      #    CMAKE_ARGS: -DCMAKE_C_COMPILER=clang
+      #- linux_oqs:
+      #    <<: *require_buildcheck
+      #    name: debian-buster
+      #    context: openquantumsafe
+      #    CONTAINER: openquantumsafe/ci-debian-buster-amd64:latest
+      - linux_oqs:
+          <<: *require_buildcheck
+          name: ubuntu-focal-noopenssl
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+          CMAKE_ARGS: -DCMAKE_C_COMPILER=gcc-8 -DOQS_USE_OPENSSL=OFF
+      - linux_oqs:
+          <<: *require_buildcheck
+          name: ubuntu-focal-shared-noopenssl
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+          CMAKE_ARGS: -DCMAKE_C_COMPILER=gcc-7 -DOQS_DIST_BUILD=ON -DOQS_USE_OPENSSL=OFF -DBUILD_SHARED_LIBS=ON
+          PYTEST_ARGS: --ignore=tests/test_namespace.py --numprocesses=auto
+      - linux_oqs:
+          <<: *require_buildcheck
+          name: ubuntu-focal-clang9
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+          CMAKE_ARGS: -DCMAKE_C_COMPILER=clang-9
+      - linux_oqs:
+          <<: *require_buildcheck
+          name: ubuntu-bionic-i386
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-bionic-i386:latest
+          CMAKE_ARGS: -DCMAKE_TOOLCHAIN_FILE=../.CMake/toolchain_x86.cmake
+      - arm_machine:
+          <<: *require_buildcheck
           name: arm64
-          ARCH: arm64
-          CMAKE_ARGS: -DOQS_ENABLE_SIG_SPHINCS=OFF
-      - arm_emulated:
-          <<: *require_stylecheck
-          name: armhf
-          ARCH: armhf
-          CMAKE_ARGS: -DOQS_ENABLE_SIG_SPHINCS=OFF
-      - arm_emulated:
-          <<: *require_stylecheck
-          name: armel
-          ARCH: armel
-          CMAKE_ARGS: -DCMAKE_BUILD_TYPE=Release  -DOQS_ENABLE_SIG_SPHINCS=OFF
-
+          PYTEST_ARGS: --numprocesses=auto --maxprocesses=10
+          CMAKE_ARGS: -DOQS_DIST_BUILD=ON
       - macOS:
-          <<: *require_stylecheck
+          <<: *require_buildcheck
           name: macOS-noopenssl
           CMAKE_ARGS: -DOQS_USE_OPENSSL=OFF
       - macOS:
-          <<: *require_stylecheck
+          <<: *require_buildcheck
           name: macOS-shared
-          CMAKE_ARGS: -DBUILD_SHARED_LIBS=ON
+          CMAKE_ARGS: -DBUILD_SHARED_LIBS=ON -DOQS_DIST_BUILD=ON
 
-  commit-to-master:
+  commit-to-main:
     when:
-      equal: [ master, << pipeline.git.branch >> ]
+      equal: [ main, << pipeline.git.branch >> ]
     jobs:
       - trigger-downstream-ci:
           context: openquantumsafe
+
+  weekly:
+    jobs:
+      - linux_oqs:
+          name: constant-time-x64
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
+          CMAKE_ARGS: -DOQS_OPT_TARGET=generic -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_TEST_CONSTANT_TIME=ON
+          PYTEST_ARGS: --numprocesses=auto -k 'test_constant_time'
+      - linux_oqs:
+          name: constant-time-x64-extensions
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-bionic-x86_64:latest
+          # building for haswell to avoid generating instructions that valgrind cannot currently handle
+          # TODO: Re-enable target=auto if/when valgrind supports beyond AVX2:
+          # check: https://valgrind.org/info/platforms.html
+          CMAKE_ARGS: -DOQS_OPT_TARGET=haswell -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_TEST_CONSTANT_TIME=ON
+          PYTEST_ARGS: --numprocesses=auto -k 'test_constant_time'
+          SKIP_ALGS: 'SPHINCS\+-SHA256*,Rainbow-V-Compressed'
+      - linux_oqs:
+          name: undefined-sanitizer
+          context: openquantumsafe
+          CONTAINER: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+          CMAKE_ARGS: -DCMAKE_C_COMPILER=clang-9 -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZER=Undefined
+          # Normally the linux tests are run with 35 processes, but that
+          # exhausts memory for this test
+          PYTEST_ARGS: --numprocesses=1
+    # run these jobs unconditionally every Sunday at midnight
+    triggers:
+      - schedule:
+          cron: "10 0 * * 0"
+          filters:
+            branches:
+              only:
+                - main

@@ -1,26 +1,81 @@
-CRYSTALS-Dilithium
-==================
+# CRYSTALS-Dilithium
 
-- **Algorithm type**: signature
+- **Algorithm type**: Digital signature scheme.
 - **Main cryptographic assumption**: hardness of lattice problems over module lattices.
-- **Scheme authors**: Vadim Lyubashevsky, Leo Ducas, Eike Kiltz, Tancrede Lepoint, Peter Schwabe, Gregor Seiler, Damien Stehle
+- **Principal submitters**: Vadim Lyubashevsky.
+- **Auxiliary submitters**: Shi Bai, Léo Ducas, Eike Kiltz, Tancrède Lepoint, Peter Schwabe, Gregor Seiler, Damien Stehlé.
 - **Authors' website**: https://pq-crystals.org/dilithium/
-- **Version**: NIST Round 2 submission
+- **Specification version**: 3.1.
+- **Implementation source**: https://github.com/pq-crystals/dilithium/commit/61b51a71701b8ae9f546a1e5d220e1950ed20d06 with copy_from_upstream patches
+- **Implementation license (SPDX-Identifier)**: CC0-1.0.
 
-Implementation
---------------
+## Parameter set summary
 
-- **Source of implementation**: https://github.com/pq-crystals/dilithium
-- **Implementation version**: https://github.com/pq-crystals/dilithium/tree/497a98bc7efe48cb0d18fd20d6d9a4b5629406ef
-- **License**: public domain
-- **Constant-time**: Yes
-- **Optimizations**: Portable C with AVX2, BMI1, and POPCNT instructions (if available at run-time)
+|  Parameter set  | Security model   |   Claimed NIST Level |   Public key size (bytes) |   Secret key size (bytes) |   Signature size (bytes) |
+|:---------------:|:-----------------|---------------------:|--------------------------:|--------------------------:|-------------------------:|
+|   Dilithium2    | EUF-CMA          |                    2 |                      1312 |                      2528 |                     2420 |
+|   Dilithium3    | EUF-CMA          |                    3 |                      1952 |                      4000 |                     3293 |
+|   Dilithium5    | EUF-CMA          |                    5 |                      2592 |                      4864 |                     4595 |
+| Dilithium2-AES  | EUF-CMA          |                    2 |                      1312 |                      2528 |                     2420 |
+| Dilithium3-AES  | EUF-CMA          |                    3 |                      1952 |                      4000 |                     3293 |
+| Dilithium5-AES  | EUF-CMA          |                    5 |                      2592 |                      4864 |                     4595 |
 
-Parameter sets
---------------
+## Dilithium2 implementation characteristics
 
-| Parameter set       | Security model | Claimed NIST security level | Public key size (bytes) | Secret key size (bytes) | Signature size (bytes) |
-|---------------------|:--------------:|:---------------------------:|:-----------------------:|:-----------------------:|:----------------------:|
-| DILITHIUM_2         |    EUF-CMA     |              1              |          1184           |          2800           |          2044          |
-| DILITHIUM_3         |    EUF-CMA     |              2              |          1472           |          3504           |          2701          |
-| DILITHIUM_4         |    EUF-CMA     |              3              |          1760           |          3856           |          3366          |
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?‡   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:----------------------|
+|           ref            | All                         | All                             | None                    | True                               | True                                           | False                 |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AVX2,POPCNT             | True                               | True                                           | False                 |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+ ‡For an explanation of what this denotes, consult the [Explanation of Terms](#explanation-of-terms) section at the end of this file.
+
+## Dilithium3 implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|           ref            | All                         | All                             | None                    | True                               | True                                           | False                |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AVX2,POPCNT             | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Dilithium5 implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used   | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|           ref            | All                         | All                             | None                    | True                               | True                                           | False                |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AVX2,POPCNT             | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Dilithium2-AES implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used      | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:---------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|           ref            | All                         | All                             | None                       | True                               | True                                           | False                |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AES,AVX2,POPCNT,SSE2,SSSE3 | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Dilithium3-AES implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used      | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:---------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|           ref            | All                         | All                             | None                       | True                               | True                                           | False                |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AES,AVX2,POPCNT,SSE2,SSSE3 | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Dilithium5-AES implementation characteristics
+
+|  Identifier in upstream  | Supported architecture(s)   | Supported operating system(s)   | CPU extension(s) used      | No branching-on-secrets claimed?   | No branching-on-secrets checked by valgrind?   | Large stack usage?   |
+|:------------------------:|:----------------------------|:--------------------------------|:---------------------------|:-----------------------------------|:-----------------------------------------------|:---------------------|
+|           ref            | All                         | All                             | None                       | True                               | True                                           | False                |
+|           avx2           | x86\_64                     | Darwin,Linux                    | AES,AVX2,POPCNT,SSE2,SSSE3 | True                               | True                                           | False                |
+
+Are implementations chosen based on runtime CPU feature detection? **Yes**.
+
+## Explanation of Terms
+
+- **Large Stack Usage**: Implementations identified as having such may cause failures when running in threads or in constrained environments.

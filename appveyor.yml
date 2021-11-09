@@ -7,31 +7,53 @@ platform: x64
 
 branches:
   except:
-    - /master-new-.*/
+    - /main-new-.*/
+    - /ghactionsonly-.*/
 
 environment:
   matrix:
+    - BUILD_SHARED: ON
+      COMPILER: cygwin
+    - BUILD_SHARED: OFF
+      COMPILER: cygwin
+    - BUILD_SHARED: ON
+      OQS_USE_OPENSSL: ON
+      COMPILER: cygwin
     - BUILD_SHARED: OFF
       COMPILER: msvc2019
+    - BUILD_SHARED: OFF
+      COMPILER: msvc2019
+      OQS_USE_OPENSSL: ON
     - BUILD_SHARED: ON
       COMPILER: msvc2019
     - BUILD_SHARED: OFF
       COMPILER: msys2
     - BUILD_SHARED: ON
       COMPILER: msys2
+
+for:
+  - matrix:
+      only:
+        - OQS_USE_OPENSSL: ON
+    before_build:
+      - cmd: |-
+             choco install openssl
+             SET "OPENSSL_ROOT_DIR=C:\OpenSSL-Win64"
 
 build_script:
   - cmd: '%APPVEYOR_BUILD_FOLDER%\appveyor_build.bat'
 
 before_test:
   - cmd: |-
-         SET "PATH=C:\Python37;C:\Python37\Scripts;%PATH%"
-         pip.exe install pytest pytest-xdist
+         SET "PATH=C:\Python37-x64;C:\Python37-x64\Scripts;%PATH%"
+         pip.exe install pytest pytest-xdist pyyaml
 
 test_script:
   - cmd: |-
          cd %APPVEYOR_BUILD_FOLDER%
-         set PATH=%cd%\build\bin;%PATH% && python -m pytest --numprocesses=auto --verbose --ignore=tests/test_code_conventions.py --junitxml=build\test-results\pytest\test-results.xml
+         set PATH=%APPVEYOR_BUILD_FOLDER%\build\bin;c:\cygwin64\bin;%PATH%
+         if not exist tmp (mkdir tmp) 
+         python -m pytest --numprocesses=auto -vv --maxfail=10 --ignore=tests/test_code_conventions.py --junitxml=build\test-results\pytest\test-results.xml
 
 after_test:
   - ps: |-

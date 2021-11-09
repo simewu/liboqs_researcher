@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 
+option(OQS_ENABLE_TEST_CONSTANT_TIME "Build test suite with support for Valgrind-based detection of non-constant time behaviour." OFF)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
    CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wbad-function-cast)
@@ -34,13 +36,13 @@ if(NOT WIN32)
     execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/git_commit.sh OUTPUT_VARIABLE GIT_COMMIT)
     add_definitions(-DOQS_COMPILE_GIT_COMMIT="${GIT_COMMIT}")
 
-    add_executable(test_aes test_aes.c $<TARGET_OBJECTS:common>)
+    add_executable(test_aes test_aes.c ${COMMON_OBJS})
     target_link_libraries(test_aes PRIVATE ${INTERNAL_TEST_DEPS})
 
-    add_executable(test_hash test_hash.c $<TARGET_OBJECTS:common>)
+    add_executable(test_hash test_hash.c ${COMMON_OBJS})
     target_link_libraries(test_hash PRIVATE ${INTERNAL_TEST_DEPS})
 
-    add_executable(test_sha3 test_sha3.c $<TARGET_OBJECTS:common>)
+    add_executable(test_sha3 test_sha3.c ${COMMON_OBJS})
     target_link_libraries(test_sha3 PRIVATE ${INTERNAL_TEST_DEPS})
 
     set(UNIX_TESTS test_aes test_hash test_sha3)
@@ -66,6 +68,9 @@ else ()
     target_link_libraries(test_kem PRIVATE ${API_TEST_DEPS})
 endif()
 
+add_executable(test_kem_mem test_kem_mem.c)
+target_link_libraries(test_kem_mem PRIVATE ${API_TEST_DEPS})
+
 add_executable(speed_kem speed_kem.c)
 target_link_libraries(speed_kem PRIVATE ${API_TEST_DEPS})
 
@@ -83,8 +88,20 @@ else ()
     target_link_libraries(test_sig PRIVATE ${API_TEST_DEPS})
 endif()
 
+add_executable(test_sig_mem test_sig_mem.c)
+target_link_libraries(test_sig_mem PRIVATE ${API_TEST_DEPS})
+
 add_executable(speed_sig speed_sig.c)
 target_link_libraries(speed_sig PRIVATE ${API_TEST_DEPS})
+
+add_executable(dump_alg_info dump_alg_info.c)
+target_link_libraries(dump_alg_info PRIVATE ${API_TEST_DEPS})
+
+# Enable Valgrind-based timing side-channel analysis for test_kem and test_sig
+if(OQS_ENABLE_TEST_CONSTANT_TIME AND NOT OQS_DEBUG_BUILD)
+    message(WARNING "OQS_ENABLE_TEST_CONSTANT_TIME is incompatible with CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}.")
+    set(OQS_ENABLE_TEST_CONSTANT_TIME OFF)
+endif()
 
 # Record compile options -- from target speed_kem - don't set any options only for speed_kem!
 get_property(OQS_COMPILE_OPTIONS TARGET speed_kem PROPERTY COMPILE_OPTIONS)
@@ -95,7 +112,7 @@ add_definitions(-DOQS_COMPILE_OPTIONS="[${OQS_COMPILE_OPTIONS}]")
 # for DLL builds.
 add_custom_target(
     run_tests
-    COMMAND ${PYTHON3_EXEC} -m pytest --verbose --numprocesses=auto
+    COMMAND ${CMAKE_COMMAND} -E env OQS_BUILD_DIR=${CMAKE_BINARY_DIR} ${PYTHON3_EXEC} -m pytest --verbose --numprocesses=auto
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    DEPENDS oqs example_kem kat_kem test_kem example_sig kat_sig test_sig ${UNIX_TESTS}
+    DEPENDS oqs example_kem kat_kem test_kem example_sig kat_sig test_sig test_sig_mem test_kem_mem ${UNIX_TESTS}
     USES_TERMINAL)
