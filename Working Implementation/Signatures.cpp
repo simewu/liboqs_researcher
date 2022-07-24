@@ -222,49 +222,6 @@ int main(int argc, char** argv) {
     outputFile.close();
     std::cout << std::endl << "All data has been successfully saved to " << fileName << "!" << std::endl;
 
-    //return 0;
-
-	//getting user choice for the algorithm
-	std::string userChoice;
-	//std::cout << "Enter algorithm of choice: ";
-	//std::cin >> userChoice;
-	userChoice = "DILITHIUM_2";
-	std::cout << "Algorithm of choice " << userChoice << std::endl;
-	
-	std::string algorithm = userChoice;
-	std::string message = "Hello, world!";
-
-	std::cout << std::endl;
-
-	std::cout << "Algorithm: " << algorithm << std::endl << std::endl;
-
-	SignatureManager sigmanager(algorithm);
-	sigmanager.generate_keypair();
-
-	std::cout << "Public key (" << sigmanager.public_key_length << " bytes):" << std::endl << sigmanager.get_public_key() << std::endl;
-	std::cout << std::endl;
-
-	std::cout << "Private key (" << sigmanager.private_key_length << " bytes):" << std::endl << sigmanager.get_private_key() << std::endl;
-	std::cout << std::endl;
-
-	std::cout << "Signing message \"" << message << "\" to get signature (" << sigmanager.signature_length << " bytes)" << std::endl;
-
-	unsigned char* signature = sigmanager.sign(message);
-
-	// Print the signature
-	//std::cout << sigmanager.bytes_to_hex(signature, sigmanager.signature_length) << std::endl;
-
-	std::cout << std::endl;
-
-	std::cout << "Verifying message and signature: ";
-
-	//message[0]++; // Modify the message to fail verification
-	//signature[0]++; // Modify the signature to fail verification
-
-	bool result = sigmanager.verify(message, signature);
-	if(result) std::cout << "SUCCESS" << std::endl;
-	else std::cout << "FAILED" << std::endl;
-
 	std::cout << std::endl;
 	return 0;
 }
