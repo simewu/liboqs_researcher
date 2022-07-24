@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
 
 	const char *availAlgs[] = {
 		"Dilithium2", "Dilithium3", "Dilithium5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
-	}
+	};
 
 	//const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
 	int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
