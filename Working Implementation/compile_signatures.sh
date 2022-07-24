@@ -1,3 +1,9 @@
-#g++ -o Signatures.o Signatures.cpp ../build/lib/liboqs.a
-g++ -o Signatures.o Signatures.cpp -L../build/lib -loqs
+rm -rf Signatures.o
+
+# -g for debugging
+g++ -g -o Signatures.o Signatures.cpp -L../build/lib -loqs
+
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+
 ./Signatures.o
