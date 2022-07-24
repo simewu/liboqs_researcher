@@ -208,7 +208,6 @@ int main(int argc, char** argv) {
 
 	//const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
 	int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
-    
     for (int i = 0; i < numberOfAlgorithms; i++) {
 		std::string algorithm = availAlgs[i];
     	try {
