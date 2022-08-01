@@ -1,0 +1,69 @@
+How many samples would you like Listing available algorithms:
+Progress: 50%
+T_Key_Gen: 222
+T_Sign: 273
+T_Ver: 86
+T_Key_Gen: 155
+T_Sign: 209
+T_Ver: 85
+T_Key_Gen: 148
+T_Sign: 174
+T_Ver: 99
+T_Key_Gen: 169
+T_Sign: 191
+T_Ver: 115
+T_Key_Gen: 157
+T_Sign: 173
+T_Ver: 83
+T_Key_Gen: 165
+T_Sign: 406
+T_Ver: 83
+T_Key_Gen: 149
+T_Sign: 408
+T_Ver: 83
+T_Key_Gen: 152
+T_Sign: 314
+T_Ver: 82
+T_Key_Gen: 160
+T_Sign: 206
+T_Ver: 83
+T_Key_Gen: 149
+T_Sign: 202
+T_Ver: 83
+    Seconds: i-0.0041/k-165.2/s-258.6/v-90.2 ms	Bytes: 3732	Dilithium2
+Progress: 100%
+T_Key_Gen: 241
+T_Sign: 305
+T_Ver: 160
+T_Key_Gen: 214
+T_Sign: 244
+T_Ver: 153
+T_Key_Gen: 210
+T_Sign: 419
+T_Ver: 143
+T_Key_Gen: 243
+T_Sign: 416
+T_Ver: 142
+T_Key_Gen: 207
+T_Sign: 497
+T_Ver: 141
+T_Key_Gen: 208
+T_Sign: 637
+T_Ver: 158
+T_Key_Gen: 211
+T_Sign: 316
+T_Ver: 141
+T_Key_Gen: 210
+T_Sign: 238
+T_Ver: 138
+T_Key_Gen: 213
+T_Sign: 282
+T_Ver: 109
+T_Key_Gen: 172
+T_Sign: 199
+T_Ver: 89
+    Seconds: i-0.0019/k-215.4/s-358.2/v-139.8 ms	Bytes: 5245	Dilithium3
+
+All data has been successfully saved to Algorithm_benchmark_10.csv!
+
+How many samples would you like 

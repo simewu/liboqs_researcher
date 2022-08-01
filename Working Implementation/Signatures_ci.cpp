@@ -14,12 +14,15 @@
 	get_public_key(): Get the public key in a hex string
 	get_private_key(): Get the private key in a hex string
 	public_key: The public key as a char array
-	private_key: The private key as a char arraycp
+	private_key: The private key as a char array
 
 	sign(message): Return the signature (unsigned char*) for a message (std::string)
 
 	verify(message, signature): Return true or false for if a message and signature are valid
 */
+
+int g_samples = 3;
+
 class SignatureManager {
 private:
 	char* algorithm_char;
@@ -51,8 +54,15 @@ public:
 
 	// Generate a public and private key pair
 	void generate_keypair() {
-		OQS_STATUS status = OQS_SIG_keypair(sig, public_key, private_key);
-		if(status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_keypair failed\n");
+		for (int i = 0; i < 5; ++i){
+			std::clock_t t_key_gen_start = std::clock();
+			OQS_STATUS status = OQS_SIG_keypair(sig, public_key, private_key);
+			std::clock_t t_key_gen_stop = std::clock();
+			if(status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_keypair failed\n");
+			double t_key_gen = (t_key_gen_stop - t_key_gen_start);
+			std::cout << "T_Key_Gen: " << (t_key_gen) << "\n";
+		}
+		
 	}
 
 	// Get the generated public key
@@ -71,11 +81,14 @@ public:
 		unsigned int message_length = message.length();
 		size_t *signature_len = (size_t*) &signature_length;
 		uint8_t *message_bytes = reinterpret_cast<uint8_t*>(&message[0]);
-
-		OQS_STATUS status = OQS_SIG_sign(sig, signature, signature_len, message_bytes, message_length, private_key);
-
-		if (status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_sign failed\n");
-
+		for (int i = 0; i < 5; i++){
+			std::clock_t t_sign_start = std::clock(); 
+			OQS_STATUS status = OQS_SIG_sign(sig, signature, signature_len, message_bytes, message_length, private_key);
+			std::clock_t t_sign_stop = std::clock();
+			if (status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_sign failed\n");
+			double t_sign = (t_sign_stop - t_sign_start);
+			std::cout << "T_Sign: " << (t_sign) << "\n";
+		}
 		return signature;
 	}
 
@@ -84,9 +97,13 @@ public:
 		unsigned int message_length = message.length();
 		//size_t *signature_len = (size_t*) &signature_length;
 		uint8_t *message_bytes = reinterpret_cast<uint8_t*>(&message[0]);
-
-		OQS_STATUS status = OQS_SIG_verify(sig, message_bytes, message_length, signature, signature_length, public_key);
-
+		for (int i = 0; i < 5; ++i) {
+			std::clock_t t_ver_start = std::clock();
+			OQS_STATUS status = OQS_SIG_verify(sig, message_bytes, message_length, signature, signature_length, public_key);
+			std::clock_t t_ver_stop = std::clock();
+			double t_ver = (t_ver_stop - t_ver_start);
+			std::cout << "T_Ver: " << (t_ver) << "\n";
+		}
 		return status == OQS_SUCCESS;
 	}
 
@@ -129,6 +146,12 @@ std::string benchmarkLog(std::string algorithm, int n) {
 	double clocks_keypair_generation = 0;
 	double clocks_signing = 0;
 	double clocks_verifying = 0;
+
+	double clocks_initialization_array[n];
+	double clocks_keypair_generation_array[n];
+	double clocks_signing_array[n];
+	double clocks_verifying_array[n];
+
 	for(int i = 0; i < n; i++) {
 
 		std::clock_t t1 = std::clock();
@@ -145,6 +168,16 @@ std::string benchmarkLog(std::string algorithm, int n) {
 		clocks_keypair_generation += (t3 - t2);
 		clocks_signing += (t4 - t3);
 		clocks_verifying += (t5 - t4);
+
+		clocks_initialization_array[i] = (t2-t1);
+		//std::cout << "Initialization time: " << (clocks_initialization_array[i]) << "\n";
+		clocks_keypair_generation_array[i] = (t3-t2);
+		//std::cout << "Key gen time: " << (clocks_keypair_generation_array[i]) << "\n";
+		clocks_signing_array[i] = (t4-t3);
+		//std::cout << "Signing time: " << (clocks_signing_array[i]) << "\n";
+		clocks_verifying_array[i] = (t5-t4);
+		//std::cout << "Verifying time: " << (clocks_verifying_array[i]) << "\n";
+
 	}
 
 	clocks_initialization /= (double)n;
@@ -174,10 +207,10 @@ std::string benchmarkLog(std::string algorithm, int n) {
 	row += std::to_string(sigmanager.public_key_length + sigmanager.signature_length) + ",";
 	row += std::to_string(n) + ",";
 	row += "\"" + message + "\",";
-	row += std::to_string(ms_initialization) + ",";
-	row += std::to_string(ms_keypair_generation) + ",";
-	row += std::to_string(ms_signing) + ",";
-	row += std::to_string(ms_verifying) + ",";
+	row += std::to_string(clocks_initialization_array[0]) + ",";
+	row += std::to_string(clocks_keypair_generation_array[0]) + ",";
+	row += std::to_string(clocks_signing_array[0]) + ",";
+	row += std::to_string(clocks_verifying_array[0]) + ",";
 	return row;
 }
 
@@ -202,9 +235,12 @@ int main(int argc, char** argv) {
 		//"DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
 	//};
 
+	//const char *availAlgs[] = {
+	//	"Dilithium2", "Dilithium3", "Dilithium5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
+	//};
+
 	const char *availAlgs[] = {
-		"Dilithium2", "Dilithium3", "Dilithium5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
-	};
+		"Dilithium2", "Dilithium3"};
 
 	//const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
 	int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
