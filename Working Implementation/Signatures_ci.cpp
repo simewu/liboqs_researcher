@@ -24,11 +24,10 @@
 int g_samples = 3;
 
 class SignatureManager {
-private:
+public:
 	char* algorithm_char;
 	OQS_SIG *sig;
 
-public:
 	std::string algorithm;
 	unsigned int public_key_length, private_key_length, signature_length;
 	unsigned char *public_key, *private_key;
@@ -52,19 +51,6 @@ public:
 		private_key = (unsigned char*) malloc(private_key_length);
 	}
 
-	// Generate a public and private key pair
-	void generate_keypair() {
-		for (int i = 0; i < 5; ++i){
-			std::clock_t t_key_gen_start = std::clock();
-			OQS_STATUS status = OQS_SIG_keypair(sig, public_key, private_key);
-			std::clock_t t_key_gen_stop = std::clock();
-			if(status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_keypair failed\n");
-			double t_key_gen = (t_key_gen_stop - t_key_gen_start);
-			std::cout << "T_Key_Gen: " << (t_key_gen) << "\n";
-		}
-		
-	}
-
 	// Get the generated public key
 	std::string get_public_key() {
 		return bytes_to_hex(public_key, public_key_length);
@@ -73,38 +59,6 @@ public:
 	// Get the generated private key
 	std::string get_private_key() {
 		return bytes_to_hex(private_key, private_key_length);
-	}
-
-	// Sign a message, returns its signature
-	unsigned char* sign(std::string message) {
-		unsigned char *signature = (unsigned char*) malloc(signature_length);
-		unsigned int message_length = message.length();
-		size_t *signature_len = (size_t*) &signature_length;
-		uint8_t *message_bytes = reinterpret_cast<uint8_t*>(&message[0]);
-		for (int i = 0; i < 5; i++){
-			std::clock_t t_sign_start = std::clock(); 
-			OQS_STATUS status = OQS_SIG_sign(sig, signature, signature_len, message_bytes, message_length, private_key);
-			std::clock_t t_sign_stop = std::clock();
-			if (status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_sign failed\n");
-			double t_sign = (t_sign_stop - t_sign_start);
-			std::cout << "T_Sign: " << (t_sign) << "\n";
-		}
-		return signature;
-	}
-
-	// Verify a signature
-	bool verify(std::string message, unsigned char* signature) {
-		unsigned int message_length = message.length();
-		//size_t *signature_len = (size_t*) &signature_length;
-		uint8_t *message_bytes = reinterpret_cast<uint8_t*>(&message[0]);
-		for (int i = 0; i < 5; ++i) {
-			std::clock_t t_ver_start = std::clock();
-			OQS_STATUS status = OQS_SIG_verify(sig, message_bytes, message_length, signature, signature_length, public_key);
-			std::clock_t t_ver_stop = std::clock();
-			double t_ver = (t_ver_stop - t_ver_start);
-			std::cout << "T_Ver: " << (t_ver) << "\n";
-		}
-		return status == OQS_SUCCESS;
 	}
 
 	// Given an array of bytes, convert it to a hexadecimal string
@@ -147,71 +101,101 @@ std::string benchmarkLog(std::string algorithm, int n) {
 	double clocks_signing = 0;
 	double clocks_verifying = 0;
 
-	double clocks_initialization_array[n];
-	double clocks_keypair_generation_array[n];
-	double clocks_signing_array[n];
-	double clocks_verifying_array[n];
+	// double clocks_initialization_array[n];
+	// double clocks_keypair_generation_array[n];
+	// double clocks_signing_array[n];
+	// double clocks_verifying_array[n];
+
+	OQS_STATUS status;
+	std::string rows = "";
 
 	for(int i = 0; i < n; i++) {
 
-		std::clock_t t1 = std::clock();
+		std::clock_t it1 = std::clock();
     		SignatureManager sigmanager(algorithm);
-		std::clock_t t2 = std::clock();
-			sigmanager.generate_keypair();
-		std::clock_t t3 = std::clock();
-			unsigned char* signature = sigmanager.sign(message);
-		std::clock_t t4 = std::clock();
-			bool result = sigmanager.verify(message, signature);
-		std::clock_t t5 = std::clock();
+		std::clock_t it2 = std::clock();
+		
+		std::clock_t gt1 = std::clock();
+		//	std::clock_t t_key_gen_start = std::clock();
+		status = OQS_SIG_keypair(sigmanager.sig, sigmanager.public_key, sigmanager.private_key);
+		// std::clock_t t_key_gen_stop = std::clock();
+		// if(status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_keypair failed\n");
+		// double t_key_gen = (t_key_gen_stop - t_key_gen_start);
+		// t_key_gen = t_key_gen / (double)(CLOCKS_PER_SEC / 1000);
+		// std::cout << "T_Key_Gen: " << (t_key_gen) << "\n";
+		std::clock_t gt2 = std::clock();
 
-		clocks_initialization += (t2 - t1);
-		clocks_keypair_generation += (t3 - t2);
-		clocks_signing += (t4 - t3);
-		clocks_verifying += (t5 - t4);
+		unsigned char *signature = (unsigned char*) malloc(sigmanager.signature_length);
+		unsigned int message_length = message.length();
+		size_t *signature_len = (size_t*) &sigmanager.signature_length;
+		uint8_t *message_bytes = reinterpret_cast<uint8_t*>(&message[0]);
+		std::clock_t st1 = std::clock();
+		// std::clock_t t_sign_start = std::clock(); 
+		status = OQS_SIG_sign(sigmanager.sig, signature, signature_len, message_bytes, message_length, sigmanager.private_key);
+		// std::clock_t t_sign_stop = std::clock();
+		// if (status != OQS_SUCCESS) throw std::runtime_error("ERROR: OQS_SIG_sign failed\n");
+		// double t_sign = (t_sign_stop - t_sign_start);
+		// t_sign = t_sign / (double)(CLOCKS_PER_SEC / 1000);
+		// std::cout << "T_Sign: " << (t_sign) << "\n";
+		//return signature;
+		std::clock_t st2 = std::clock();
 
-		clocks_initialization_array[i] = (t2-t1);
-		//std::cout << "Initialization time: " << (clocks_initialization_array[i]) << "\n";
-		clocks_keypair_generation_array[i] = (t3-t2);
-		//std::cout << "Key gen time: " << (clocks_keypair_generation_array[i]) << "\n";
-		clocks_signing_array[i] = (t4-t3);
-		//std::cout << "Signing time: " << (clocks_signing_array[i]) << "\n";
-		clocks_verifying_array[i] = (t5-t4);
-		//std::cout << "Verifying time: " << (clocks_verifying_array[i]) << "\n";
 
+		std::clock_t vt1 = std::clock();
+		// std::clock_t t_ver_start = std::clock();
+		status = OQS_SIG_verify(sigmanager.sig, message_bytes, message_length, signature, sigmanager.signature_length, sigmanager.public_key);
+		// std::clock_t t_ver_stop = std::clock();
+		// double t_ver = (t_ver_stop - t_ver_start);
+		// t_ver = t_ver / (double)(CLOCKS_PER_SEC / 1000);
+		// std::cout << "T_Ver: " << (t_ver) << "\n";
+		std::clock_t vt2 = std::clock();
+
+		clocks_initialization += (it2 - it1);
+		clocks_keypair_generation += (gt2 - gt1);
+		clocks_signing += (st2 - st1);
+		clocks_verifying += (vt2 - vt1);
+
+		// clocks_initialization_array[i] = clocks_initialization;
+		// //std::cout << "Initialization time: " << (clocks_initialization_array[i]) << "\n";
+		// clocks_keypair_generation_array[i] = clocks_keypair_generation;
+		// //std::cout << "Key gen time: " << (clocks_keypair_generation_array[i]) << "\n";
+		// clocks_signing_array[i] = clocks_signing;
+		// //std::cout << "Signing time: " << (clocks_signing_array[i]) << "\n";
+		// clocks_verifying_array[i] = clocks_verifying;
+		// //std::cout << "Verifying time: " << (clocks_verifying_array[i]) << "\n";
+
+		clocks_initialization /= (double)n;
+		clocks_keypair_generation /= (double)n;
+		clocks_signing /= (double)n;
+		clocks_verifying /= (double)n;
+
+		double ms_initialization = clocks_initialization / (double)(CLOCKS_PER_SEC / 1000);
+		double ms_keypair_generation = clocks_keypair_generation / (double)(CLOCKS_PER_SEC / 1000);
+		double ms_signing = clocks_signing / (double)(CLOCKS_PER_SEC / 1000);
+		double ms_verifying =  clocks_verifying / (double)(CLOCKS_PER_SEC / 1000);
+
+		// Used to quickly grab the key and signature lengths
+		// SignatureManager sigmanager(algorithm);
+		// std::cout << "    Seconds: i-" << ms_initialization << "/k-" << clocks_keypair_generation << "/s-" << clocks_signing << "/v-" << clocks_verifying << " ms\t";
+		// std::cout << "Bytes: " << (sigmanager.public_key_length + sigmanager.signature_length) << "\t";
+		// std::cout << algorithm;
+		// std::cout << std::endl;
+
+
+		rows += "\"" + algorithm + "\",";
+		rows += std::to_string(sigmanager.public_key_length) + ",";
+		rows += std::to_string(sigmanager.private_key_length) + ",";
+		rows += std::to_string(sigmanager.signature_length) + ",";
+		rows += std::to_string(sigmanager.public_key_length + sigmanager.signature_length) + ",";
+		rows += std::to_string(n) + ",";
+		rows += "\"" + message + "\",";
+		rows += std::to_string(ms_initialization) + ",";
+		rows += std::to_string(ms_keypair_generation) + ",";
+		rows += std::to_string(ms_signing) + ",";
+		rows += std::to_string(ms_verifying) + ",";
+		rows += "\n";
 	}
-
-	clocks_initialization /= (double)n;
-	clocks_keypair_generation /= (double)n;
-	clocks_signing /= (double)n;
-	clocks_verifying /= (double)n;
-
-	double ms_initialization = clocks_initialization / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_keypair_generation = clocks_keypair_generation / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_signing = clocks_signing / (double)(CLOCKS_PER_SEC / 1000);
-	double ms_verifying =  clocks_verifying / (double)(CLOCKS_PER_SEC / 1000);
-
-	// Used to quickly grab the key and signature lengths
-    SignatureManager sigmanager(algorithm);
-
- 	std::cout << "    Seconds: i-" << ms_initialization << "/k-" << clocks_keypair_generation << "/s-" << clocks_signing << "/v-" << clocks_verifying << " ms\t";
-	std::cout << "Bytes: " << (sigmanager.public_key_length + sigmanager.signature_length) << "\t";
-	std::cout << algorithm;
-	std::cout << std::endl;
-
-
-	std::string row = "";
-	row += "\"" + algorithm + "\",";
-	row += std::to_string(sigmanager.public_key_length) + ",";
-	row += std::to_string(sigmanager.private_key_length) + ",";
-	row += std::to_string(sigmanager.signature_length) + ",";
-	row += std::to_string(sigmanager.public_key_length + sigmanager.signature_length) + ",";
-	row += std::to_string(n) + ",";
-	row += "\"" + message + "\",";
-	row += std::to_string(clocks_initialization_array[0]) + ",";
-	row += std::to_string(clocks_keypair_generation_array[0]) + ",";
-	row += std::to_string(clocks_signing_array[0]) + ",";
-	row += std::to_string(clocks_verifying_array[0]) + ",";
-	return row;
+	return rows;
 }
 
 int main(int argc, char** argv) {
@@ -235,12 +219,12 @@ int main(int argc, char** argv) {
 		//"DILITHIUM_2", "DILITHIUM_3", "DILITHIUM_5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
 	//};
 
-	//const char *availAlgs[] = {
-	//	"Dilithium2", "Dilithium3", "Dilithium5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
-	//};
-
 	const char *availAlgs[] = {
-		"Dilithium2", "Dilithium3"};
+		"Dilithium2", "Dilithium3", "Dilithium5", "Falcon-512", "Falcon-1024", "SPHINCS+-Haraka-128f-robust", "SPHINCS+-Haraka-128f-simple", "SPHINCS+-Haraka-128s-robust", "SPHINCS+-Haraka-128s-simple", "SPHINCS+-Haraka-192f-robust", "SPHINCS+-Haraka-192f-simple", "SPHINCS+-Haraka-192s-robust", "SPHINCS+-Haraka-192s-simple", "SPHINCS+-Haraka-256f-robust", "SPHINCS+-Haraka-256f-simple", "SPHINCS+-Haraka-256s-robust", "SPHINCS+-Haraka-256s-simple", "SPHINCS+-SHA256-128f-robust", "SPHINCS+-SHA256-128f-simple", "SPHINCS+-SHA256-128s-robust", "SPHINCS+-SHA256-128s-simple", "SPHINCS+-SHA256-192f-robust", "SPHINCS+-SHA256-192f-simple", "SPHINCS+-SHA256-192s-robust", "SPHINCS+-SHA256-192s-simple", "SPHINCS+-SHA256-256f-robust", "SPHINCS+-SHA256-256f-simple", "SPHINCS+-SHA256-256s-robust", "SPHINCS+-SHA256-256s-simple", "SPHINCS+-SHAKE256-128f-robust", "SPHINCS+-SHAKE256-128f-simple", "SPHINCS+-SHAKE256-128s-robust", "SPHINCS+-SHAKE256-128s-simple", "SPHINCS+-SHAKE256-192f-robust", "SPHINCS+-SHAKE256-192f-simple", "SPHINCS+-SHAKE256-192s-robust", "SPHINCS+-SHAKE256-192s-simple", "SPHINCS+-SHAKE256-256f-robust", "SPHINCS+-SHAKE256-256f-simple", "SPHINCS+-SHAKE256-256s-robust", "SPHINCS+-SHAKE256-256s-simple"
+	};
+
+	//const char *availAlgs[] = {
+	//	"Dilithium2", "Dilithium3"};
 
 	//const int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
 	int numberOfAlgorithms = sizeof(availAlgs) / sizeof(availAlgs[0]);
@@ -249,7 +233,7 @@ int main(int argc, char** argv) {
     	try {
 			std::cout << "Progress: " << (100 * (i + 1) / float(numberOfAlgorithms)) << "%" << std::endl;
 			std::string row = benchmarkLog(algorithm, numSamples);
-			outputFile << row << std::endl;
+			outputFile << row;
 		} catch(...) {
 			std::cout << "!!!!!!!!!!!!!!!!!!!! ERROR " << algorithm << " does not work." << std::endl;
 		}
