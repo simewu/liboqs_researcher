@@ -5,12 +5,20 @@ x = [0.194727
 0.30118
 0.336457];
 
+%Dilithium2	
+%Dilithium3	
+%Dilithium5	
+
 %Dilithium Verify times
 y = [5.38E-02
 8.95E-02
 1.42E-01];
 
 %Falcon Sign times
+
+%Falcon-512
+%Falcon-1024
+
 x1 = [0.420371
 0.723592];
 
@@ -20,6 +28,22 @@ y1 = [0.0559
 
 
 %%%%%%Sphincs+ Sign times
+
+x21 = [7.295554	%SPHINCS+-Haraka-128f-robust
+13.35303	%SPHINCS+-Haraka-192f-robust
+24.724417	%SPHINCS+-Haraka-256f-robust
+6.84137	%SPHINCS+-Haraka-128f-simple
+10.474239	%SPHINCS+-Haraka-192f-simple
+22.636599	%SPHINCS+-Haraka-256f-simple
+];	
+x22 = [154.920122	%SPHINCS+-Haraka-128s-robust
+297.84396	%SPHINCS+-Haraka-192s-robust
+258.22917	%SPHINCS+-Haraka-256s-robust
+127.223039	%SPHINCS+-Haraka-128s-simple
+239.504653	%SPHINCS+-Haraka-192s-simple
+202.684292	%SPHINCS+-Haraka-256s-simple
+];
+
 
 %%%Haraka Sign times%%
 x2 = [7.295554
@@ -65,6 +89,21 @@ x4 = [82.90739
 
 
 %%%%%%Sphincs+ Verify times
+
+y21 = [4.49E-01	%SPHINCS+-Haraka-128f-robust
+7.14E-01	%SPHINCS+-Haraka-192f-robust
+7.06E-01	%SPHINCS+-Haraka-256f-robust
+3.34E-01	%SPHINCS+-Haraka-128f-simple
+4.96E-01	%SPHINCS+-Haraka-192f-simple
+5.08E-01	%SPHINCS+-Haraka-256f-simple
+];
+y22 = [1.71E-01	%SPHINCS+-Haraka-128s-robust
+2.66E-01	%SPHINCS+-Haraka-192s-robust
+3.73E-01	%SPHINCS+-Haraka-256s-robust
+1.21E-01	%SPHINCS+-Haraka-128s-simple
+1.88E-01	%SPHINCS+-Haraka-192s-simple
+2.66E-01	%SPHINCS+-Haraka-256s-simple
+	];
 
 %%%Haraka Verify times%%
 y2 = [4.49E-01
@@ -120,15 +159,18 @@ y4 = [1.01E+01
 % axis square;
 
 fig = figure("Name", "all");
-scatter(y,x,30,'blue')
+scatter(y,x,50,'green','filled')
 hold on
 set(gca, 'YScale', 'log');
 set(gca, 'XScale', 'log');
-set(gca, 'YGrid', 'on', 'XGrid', 'off');
-scatter(y1,x1,30,'green')
-scatter(y2,x2,30,'magenta')
-scatter(y3,x3,30,'black')
-scatter(y4,x4,30,'cyan')
+set(gca, 'YGrid', 'on', 'XGrid', 'on');
+scatter(y1,x1,50,'blue','filled')
+scatter(y21,x21,50,'magenta','filled')
+scatter(y22,x22,50,'magenta','filled','MarkerEdgeColor',[0 .5 .5])
+scatter(y3,x3,50,'black')
+scatter(y4,x4,50,'red')
 xlabel('Verifying Time (\mus)');
 ylabel('Signing Time (\mus)');
 axis square;
+legend('Dilithium','Falcon','SPHINCS+Haraka-s','SPHINCS+Haraka-f','SPHINCS+SHA256','SPHINCS+Shake','Location', 'southeast', 'FontSize', 12);
+%legend(h([1,3]),{'data1','data2'})
