@@ -62,26 +62,6 @@
 #cmakedefine OQS_ENABLE_KEM_frodokem_1344_aes 1
 #cmakedefine OQS_ENABLE_KEM_frodokem_1344_shake 1
 
-#cmakedefine OQS_ENABLE_KEM_SIDH 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p434 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p434_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p503 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p503_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p610 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p610_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p751 1
-#cmakedefine OQS_ENABLE_KEM_sidh_p751_compressed 1
-
-#cmakedefine OQS_ENABLE_KEM_SIKE 1
-#cmakedefine OQS_ENABLE_KEM_sike_p434 1
-#cmakedefine OQS_ENABLE_KEM_sike_p434_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sike_p503 1
-#cmakedefine OQS_ENABLE_KEM_sike_p503_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sike_p610 1
-#cmakedefine OQS_ENABLE_KEM_sike_p610_compressed 1
-#cmakedefine OQS_ENABLE_KEM_sike_p751 1
-#cmakedefine OQS_ENABLE_KEM_sike_p751_compressed 1
-
 #cmakedefine OQS_ENABLE_SIG_PICNIC 1
 #cmakedefine OQS_ENABLE_SIG_picnic_L1_UR 1
 #cmakedefine OQS_ENABLE_SIG_picnic_L1_FS 1
@@ -210,9 +190,6 @@
 #cmakedefine OQS_ENABLE_SIG_falcon_1024_avx2 1
 
 #cmakedefine OQS_ENABLE_SIG_RAINBOW 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_I_classic 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_I_circumzenithal 1
-#cmakedefine OQS_ENABLE_SIG_rainbow_I_compressed 1
 #cmakedefine OQS_ENABLE_SIG_rainbow_III_classic 1
 #cmakedefine OQS_ENABLE_SIG_rainbow_III_circumzenithal 1
 #cmakedefine OQS_ENABLE_SIG_rainbow_III_compressed 1
