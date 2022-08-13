@@ -1,4 +1,4 @@
-liboqs version 0.7.2-rc1
+liboqs version 0.7.2-rc2
 ========================
 
 About
@@ -11,7 +11,7 @@ The **Open Quantum Safe (OQS) project** has the goal of developing and prototypi
 liboqs can be used with the following Open Quantum Safe application integrations:
 
 - **OQS-OpenSSL 1.1.1**: A prototype integration of liboqs-based authentication and key exchange into TLS 1.3 in our fork of OpenSSL 1.1.1; see the [OQS-OpenSSL-1\_1\_1-stable](https://github.com/open-quantum-safe/openssl/tree/OQS-OpenSSL_1_1_1-stable) branch of our OpenSSL fork's repository.
-- **oqs-provider**: A standalone prototype of liboqs-based key exchange for TLS 1.3 using the OpenSSL 3 (alpha) provider integration mechanism.
+- **oqs-provider**: A standalone prototype [OpenSSL 3 provider](https://www.openssl.org/docs/manmaster/man7/provider.html) enabling liboqs-based quantum-safe and hybrid key exchange for TLS 1.3, and post-quantum and hybrid X.509 certificate generation and CMS operations.
 - **OQS-BoringSSL**: A prototype integration of liboqs-based authentication and key exchange into TLS 1.3 in our fork of BoringSSL; see https://github.com/open-quantum-safe/boringssl.
 - **OQS-OpenSSH**: A prototype integration of liboqs-based authentication and key exchange into Secure Shell (SSH) version 2 in our fork of OpenSSH; see https://github.com/open-quantum-safe/openssh.
 
@@ -29,26 +29,31 @@ liboqs can also be used in the following programming languages via language-spec
 Release notes
 =============
 
-This is release candidate 1 for version 0.7.2 of liboqs.
+This is release candidate 2 for version 0.7.2 of liboqs.
+
+Security considerations
+-----------------------
+
+This release removes Rainbow level 1 and all variants of SIDH and SIKE due to cryptanalytic breaks of those algorithms.  Users are advised to move away from use of those algorithms immediately.
 
 What's New
 ----------
 
 This release continues from the 0.7.1 release of liboqs. 
 
-The goal of this release is to provide a final release for algorithms that were included in Round 3 of the NIST Post-Quantum Standardization project. 
+The goal of this release is to provide a final release for algorithms that were included in Round 3 of the NIST Post-Quantum Standardization project. As the security status of some algorithms changed during Round 3, it drops algorithms known to be broken as of release (Rainbow level 1, SIKE). Some algorithms also updated their specification during Round 3; version 0.7.2 does not incorporate any algorithm changes that result in different input/output behaviour compared to version 0.7.1; such changes will included in version 0.8.0.
 
-The next release of liboqs, version 0.8.0, will remove some algorithms that did not advance beyond NIST Round 3, update based on algorithm revisions that happened during Round 3, and begin to incorporate Round 4 changes. Discussion of algorithms to be removed in version 0.8.0 can be found in https://github.com/open-quantum-safe/liboqs/issues/1245.
+The next release of liboqs, version 0.8.0, will remove some algorithms that did not advance beyond NIST Round 3, update implementations based on algorithm/specification revisions that happened during Round 3, and begin to incorporate Round 4 changes. Discussion of algorithms to be removed in version 0.8.0 can be found in https://github.com/open-quantum-safe/liboqs/issues/1245.
 
 ### Key encapsulation mechanisms
 
-- Kyber: Update implementation
+- Kyber: Update implementation and switch use of symmetric crypto to OQS common code
 - HQC: Fix build on gcc-12
 - SIKE: Remove SIKE due to break (https://eprint.iacr.org/2022/975)
 
 ### Digital signature schemes
 
-- Dilithium: Add ARMv8 optimized implementation
+- Dilithium: Add ARMv8 optimized implementation and switch use of symmetric crypto to OQS common code
 - Picnic: Update implementation
 - Rainbow: Remove Rainbow level 1 due to break (https://eprint.iacr.org/2022/214)
 
@@ -60,11 +65,13 @@ The next release of liboqs, version 0.8.0, will remove some algorithms that did 
 - Improve AES implementation on ARMv8
 - Add aarch64 CPU feature detection on FreeBSD
 - Improve cross-compiling on Windows
+- Enable integration of liboqs into other CMake-based projects
+- Increment shared object library version
 
 ---
 
 Detailed changelog
-==================
+------------------
 
 * Update Picnic to 3.0.8 by @sebastinas in https://github.com/open-quantum-safe/liboqs/pull/1158
 * XCode update by @baentsch in https://github.com/open-quantum-safe/liboqs/pull/1162
@@ -120,5 +127,11 @@ Detailed changelog
 * fixing FreeBSD runtime ARM CPU feature detection by @baentsch in https://github.com/open-quantum-safe/liboqs/pull/1267
 * Update CODEOWNERS by @vsoftco in https://github.com/open-quantum-safe/liboqs/pull/1274
 * adding library version retrieval function by @baentsch in https://github.com/open-quantum-safe/liboqs/pull/1273
+* fixup dilithium-avx2 valgrind test file by @baentsch in https://github.com/open-quantum-safe/liboqs/pull/1283
+* Add option to all pytests to skip particular algorithms by @dstebila in https://github.com/open-quantum-safe/liboqs/pull/1282
+* Update to Picnic 3.0.17 by @sebastinas in https://github.com/open-quantum-safe/liboqs/pull/1280
+* Update release notes by @dstebila in https://github.com/open-quantum-safe/liboqs/pull/1281
+* add warning about HQC [skip ci] by @baentsch in https://github.com/open-quantum-safe/liboqs/pull/1284
+* Cover SHA3/SHAKE-implementation specific code paths in Picnic suppres… by @sebastinas in https://github.com/open-quantum-safe/liboqs/pull/1286
 
-**Full Changelog**: https://github.com/open-quantum-safe/liboqs/compare/0.7.1...0.7.2-rc1
+**Full Changelog**: https://github.com/open-quantum-safe/liboqs/compare/0.7.1...0.7.2-rc2
