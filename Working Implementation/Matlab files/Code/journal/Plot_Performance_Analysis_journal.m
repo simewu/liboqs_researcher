@@ -93,7 +93,7 @@ string(c)
 fig = figure("Name", "Message verifying");
 x = ["Dilithium" "Falcon" "SPHINCS+"];
 c = ["#0000FF" "#FF0000" "#00FF00"];
-NAMES = ["Dilithium 2" "Dilithium 4" "Falcon 512" "Falcon 1024" "SPHINCS+Haraka128s-simple" "SPHINCS+Shake256-192f-robust"];
+NAMES = ["Dilithium 2" "Dilithium 5" "Falcon 512" "Falcon 1024" "SPHINCS+Haraka128s-simple" "SPHINCS+Shake256-192f-robust"];
 y = [
     0.05 0.05 0.12
 ];
