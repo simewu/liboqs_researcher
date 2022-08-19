@@ -195,8 +195,7 @@ std::string benchmarkLog(std::string algorithm, std::vector<int> message_lengths
 int main(int argc, char** argv) {
 	srand((unsigned int)time(NULL));
 
-	//std::vector<int> message_lengths{0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000}; 
-	std::vector<int> message_lengths{0, 1, 10, 100, 1000, 10000, 100000, 1000000}; 
+	std::vector<int> message_lengths{0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000}; 
 
 	int numSamples = 100;
 	std::cout << "How many samples would you like ";
