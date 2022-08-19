@@ -8,7 +8,7 @@ plotNum = 1
 % 3 = public + signature
 % 5 = public
 % 6 = signature
-y_axis_index = 6;
+y_axis_index = 5;
 
 fontSize = 14;
 
@@ -33,7 +33,7 @@ fig = figure('Name', 'Security Parameters');
 %title('Signature Algorithm Parameters');
 
 addSpacing = 0;
-if plotNum == 2
+if plotNum == 2 && y_axis_index == 6
     addSpacing = 1;
 end
 
@@ -104,7 +104,7 @@ elseif plotNum == 2
         % point in the script, uncomment the line with the correct xlim and
         % ylim, scaled properly, for consistency with the others
         %axis([0 3140699.5 0 300]);
-        legend_pos = 'SouthEast';
+        legend_pos = 'NorthWest';
     end
     plotData("SPHINCS+ F", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
     plotData("SPHINCS+ S", "#FF00FF", ":", "v", 9, 3, "classical"); % Classical bit cost
