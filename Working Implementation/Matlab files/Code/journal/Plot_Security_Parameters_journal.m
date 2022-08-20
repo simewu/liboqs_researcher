@@ -1,14 +1,16 @@
 clear all;
 global y_axis_index fontSize data_num classical_data data_str appended_lines appended_titles;
 
-% 1 = Dilithium and Falcon
-% 2 = SPHINCS f and SPHINCS s
-plotNum = 1
+% 1 = CLASSICAL Dilithium and Falcon
+% 2 = CLASSICAL SPHINCS f and SPHINCS s
+% 3 = POST QUANTUM Dilithium and Falcon
+% 4 = POST QUANTUM SPHINCS f and SPHINCS s
+plotNum = 4
 
 % 3 = public + signature
 % 5 = public
 % 6 = signature
-y_axis_index = 5;
+y_axis_index = 6;
 
 fontSize = 14;
 
@@ -33,7 +35,7 @@ fig = figure('Name', 'Security Parameters');
 %title('Signature Algorithm Parameters');
 
 addSpacing = 0;
-if plotNum == 2 && y_axis_index == 6
+if (plotNum == 2 || plotNum == 4) && y_axis_index == 6
     addSpacing = 1;
 end
 
@@ -42,39 +44,6 @@ grid on;
 hold on;
 disp(data_num(3,4));
 
-
-% ylabel('Cost (qubits)', 'FontSize', fontSize);
-% if y_axis_index == 6
-%     axis([0 3500 0 280]);
-%     legend_pos = 'NorthEast';
-% else
-%     axis([0 1840 0 280]);
-%     legend_pos = 'NorthWest';
-% end
-% plotData("Dilithium", "#0000FF", "-", "o", 1, 3, "quantum");
-% plotData("Falcon", "#FF0000", "-", "s", 4, 2, "quantum");
-% y_tick_labels(end+1) = 280;
-
-
-% ylabel('Cost (quantum gates)', 'FontSize', fontSize);
-% if y_axis_index == 6
-%     axis([0,204 0 280]);
-%     legend_pos = 'NorthWest';
-% else
-%     axis([0 3040699.5 0 280]);
-%     legend_pos = 'NorthWest';
-% end
-% if y_axis_index == 5
-%     addSpacing = 1;
-% end
-% plotData("Rainbow", "#00FF00", "-", "o", 6, 3, "quantum"); % Gate cost
-% plotData("GeMSS", "#FF00FF", "-", "v", 15, 3, "quantum"); % Gate cost
-%y_tick_labels(end+1) = 280;
-
-
-
-%%%%%%%%%%%%%%%          CLASSICAL
-
 if plotNum == 1
     
     ylabel('Cost (bits)', 'FontSize', fontSize);
@@ -82,10 +51,7 @@ if plotNum == 1
         axis([0 5000 100 300]);
         legend_pos = 'NorthEast';
     else
-        % The following line sets the xlim and ylim, when we get to this
-        % point in the script, uncomment the line with the correct xlim and
-        % ylim, scaled properly, for consistency with the others
-        %axis([0 1850 0 280]);
+        axis([600 2900 100 300]);
         legend_pos = 'NorthWest';
     end
     plotData("Dilithium", "#0000FF", ":", "o", 1, 3, "classical");
@@ -100,26 +66,45 @@ elseif plotNum == 2
         axis([0 60000 110 310]);
         legend_pos = 'NorthWest';
     else
-        % The following line sets the xlim and ylim, when we get to this
-        % point in the script, uncomment the line with the correct xlim and
-        % ylim, scaled properly, for consistency with the others
-        %axis([0 3140699.5 0 300]);
+        axis([28 68 100 300]);
         legend_pos = 'NorthWest';
     end
     plotData("SPHINCS+ F", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
     plotData("SPHINCS+ S", "#FF00FF", ":", "v", 9, 3, "classical"); % Classical bit cost
     y_tick_labels(end+1) = 300;
 
+elseif plotNum == 3
 
-%     xlabshift = 20;
-%     xtickpos = get(gca, 'xtick');
-%     ylimvals = get(gca, 'YLim');
-%     t = text(xtickpos(1), ylimvals(1), str2num(xtickpos(1)));
-%     set(t, 'Units','pixels');
-%     set(t, 'Position', get(t,'Position')-[0 xlabshift 0]);
-%     set(t, 'Units', 'data');
-%     t1 = get(t, 'Position');
-%     xlaby = t1(2);
+    ylabel('Cost (qubits)', 'FontSize', fontSize);
+    if y_axis_index == 6
+        axis([0 5000 80 280]);
+        legend_pos = 'NorthEast';
+    else
+        axis([600 2900 80 280]);
+        legend_pos = 'NorthWest';
+    end
+    plotData("Dilithium", "#0000FF", ":", "o", 1, 3, "quantum");
+    plotData("Falcon", "#FF0000", ":", "s", 4, 2, "quantum");
+    y_tick_labels(end+1) = 280;
+
+
+
+
+elseif plotNum == 4
+    ylabel('Cost (quantum gates)', 'FontSize', fontSize);
+    if y_axis_index == 6
+        axis([0 60000 110 310]);
+        legend_pos = 'NorthWest';
+    else
+        axis([28 68 100 300]);
+        legend_pos = 'NorthWest';
+    end
+    if y_axis_index == 5
+        addSpacing = 1;
+    end
+    plotData("SPHINCS+ F", "#00FF00", ":", "o", 6, 3, "quantum");
+    plotData("SPHINCS+ S", "#FF00FF", ":", "v", 9, 3, "quantum");
+    y_tick_labels(end+1) = 280;
 
 end
 
