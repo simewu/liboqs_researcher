@@ -69,31 +69,31 @@ disp(data_num(3,4));
 
 
 
-% ylabel('Cost (bits)', 'FontSize', fontSize);
-% if y_axis_index == 6
-%     axis([0 3500 0 280]);
-%     legend_pos = 'NorthEast';
-% else
-%     axis([0 1850 0 280]);
-%     legend_pos = 'NorthWest';
-% end
-% plotData("Dilithium", "#0000FF", ":", "o", 1, 3, "classical");
-% plotData("Falcon", "#FF0000", ":", "s", 4, 2, "classical");
-% y_tick_labels(end+1) = 280;
-
-
-
-ylabel('Cost (classical gates)', 'FontSize', fontSize);
+ylabel('Cost (bits)', 'FontSize', fontSize);
 if y_axis_index == 6
-    axis([0 210 0 300]);
-    legend_pos = 'SouthEast';
+    axis([0 3500 0 280]);
+    legend_pos = 'NorthEast';
 else
-    axis([0 3140699.5 0 300]);
-    legend_pos = 'SouthEast';
+    axis([0 1850 0 280]);
+    legend_pos = 'NorthWest';
 end
-plotData("Rainbow", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
-plotData("GeMSS", "#FF00FF", ":", "v", 15, 3, "classical"); % Classical bit cost
+plotData("Dilithium", "#0000FF", ":", "o", 1, 3, "classical");
+plotData("Falcon", "#FF0000", ":", "s", 4, 2, "classical");
 y_tick_labels(end+1) = 280;
+
+
+
+% ylabel('Cost (classical gates)', 'FontSize', fontSize);
+% if y_axis_index == 6
+%     axis([0 210 0 300]);
+%     legend_pos = 'SouthEast';
+% else
+%     axis([0 3140699.5 0 300]);
+%     legend_pos = 'SouthEast';
+% end
+% plotData("Rainbow", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
+% plotData("GeMSS", "#FF00FF", ":", "v", 15, 3, "classical"); % Classical bit cost
+% y_tick_labels(end+1) = 280;
 
 % % % ylabel('Cost (qubits)', 'FontSize', fontSize);
 % % % plotData("Picnic FS", "#00CC55", "o", 18, 3);
