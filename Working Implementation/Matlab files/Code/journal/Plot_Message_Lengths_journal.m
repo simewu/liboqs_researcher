@@ -2,7 +2,7 @@ clear all;
 
 fontSize = 14
 
-data_num = readmatrix('SAMPLE_10_8i6Fr27Hwm.csv');
+data_num = readmatrix('SAMPLE_1000_msg_scal_journal.csv');
 
 
 % ************************************* SIGNING
@@ -11,11 +11,11 @@ legend_pos = 'NorthWest';
 %legend_pos = 'SouthEast';
 
 
-titles = []
-c = []
+titles = [];
+c = [];
 string(titles);
 string(c);
-titles = ["Dilithium 2" "Dilithium 3" "Dilithium 4" "Falcon 512" "Falcon 1024" "Rainbow Ia Cyclic" "Rainbow Ia Classic" "Rainbow Vc Cyclic"];
+titles = ["Dilithium 2" "Dilithium 3" "Dilithium 5" "Falcon 512" "Falcon 1024" "SPHINCS+-Haraka-128f-robust" "SPHINCS+-SHA256-128f-robust" "SPHINCS+-SHAKE256-128f-robust"];
 c = ["#8888FF" "#0000FF" "#000088" "#FF8888" "#FF0000" "#88FF88" "#00FF00" "#008800"];
 
 syms d2(x) d3(x) d4(x) f512(x) f1024(x) ria(x) riac(x) rvc(x)
@@ -88,7 +88,7 @@ titles = []
 c = []
 string(titles);
 string(c);
-titles = ["Dilithium 2" "Dilithium 3" "Dilithium 4" "Falcon 512" "Falcon 1024" "Rainbow Ia Cyclic" "Rainbow Ia Classic" "Rainbow Vc Cyclic"];
+titles = ["Dilithium 2" "Dilithium 3" "Dilithium 5" "Falcon 512" "Falcon 1024" "SPHINCS+-Haraka-128f-robust" "SPHINCS+-SHA256-128f-robust" "SPHINCS+-SHAKE256-128f-robust"];
 c = ["#8888FF" "#0000FF" "#000088" "#FF8888" "#FF0000" "#88FF88" "#00FF00" "#008800"];
 
 syms d2(x) d4(x) f512(x) f1024(x) ria(x) riac(x) rvc(x)
