@@ -16,6 +16,8 @@ def listToCSV(data):
 if __name__ == '__main__':
 
 	directory = 'ScalabilitySamples'
+
+	print(f'Move the files you want processed into the "{directory}" directory')
 	files = listFiles(r'SAMPLE_[0-9]+_[A-Za-z0-9]+\.csv', directory)
 	outputFile = open(f'COMBINED_{len(files)}_SCALABILITY_SAMPLES.csv', 'w', newline='')
 
