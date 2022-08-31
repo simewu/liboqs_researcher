@@ -62,7 +62,7 @@ if plotNum == 1
 
 elseif plotNum == 2
 
-    ylabel('Cost (classical gates)', 'FontSize', fontSize);
+    ylabel('Cost (bits)', 'FontSize', fontSize);
     if y_axis_index == 6
         axis([0 60000 80 320]);
         legend_pos = 'NorthWest';
@@ -94,7 +94,7 @@ elseif plotNum == 3
 
 
 elseif plotNum == 4
-    ylabel('Cost (quantum gates)', 'FontSize', fontSize);
+    ylabel('Cost (qubits)', 'FontSize', fontSize);
     if y_axis_index == 6
         axis([0 60000 80 320]);
         legend_pos = 'NorthWest';
