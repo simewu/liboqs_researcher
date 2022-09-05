@@ -70,8 +70,8 @@ elseif plotNum == 2
         axis([28 68 80 320]);
         legend_pos = 'NorthWest';
     end
-    plotData("SPHINCS+ F", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
-    plotData("SPHINCS+ S", "#FF00FF", ":", "v", 9, 3, "classical"); % Classical bit cost
+    plotData("SPHINCS+ f", "#00FF00", ":", "o", 6, 3, "classical"); % Classical bit cost
+    plotData("SPHINCS+ s", "#FF00FF", ":", "v", 9, 3, "classical"); % Classical bit cost
     y_tick_labels = [min(ylim), y_tick_labels];
     y_tick_labels(end+1) = max(ylim);
 
@@ -105,8 +105,8 @@ elseif plotNum == 4
     if y_axis_index == 5
         addSpacing = 1;
     end
-    plotData("SPHINCS+ F", "#00FF00", "-", "o", 6, 3, "quantum");
-    plotData("SPHINCS+ S", "#FF00FF", "-", "v", 9, 3, "quantum");
+    plotData("SPHINCS+ f", "#00FF00", "-", "o", 6, 3, "quantum");
+    plotData("SPHINCS+ s", "#FF00FF", "-", "v", 9, 3, "quantum");
     y_tick_labels = [min(ylim), y_tick_labels];
     y_tick_labels(end+1) = max(ylim);
 
