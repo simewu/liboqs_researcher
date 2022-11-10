@@ -14,6 +14,8 @@ divideInstructions = ['DIV', 'DIVPD', 'DIVPS', 'DIVSD', 'DIVSS', 'FDIV', 'FDIVP'
 
 jumpInstructions = ['JB', 'JBE', 'JL', 'JLE', 'JMP', 'JNB', 'JNBE', 'JNL', 'JNLE', 'JNO', 'JNP', 'JNS', 'JNZ', 'JO', 'JP', 'JRCXZ', 'JS', 'JZ']
 
+nopInstructions = ['FNOP', 'NOP', 'NOPL', 'NOPW']
+
 if __name__ == '__main__':
 	# Construct the assembly --> category mapping using the dataset from https://uops.info/xml.html
 	categoryMap = {}
@@ -38,6 +40,7 @@ if __name__ == '__main__':
 	header += 'Multiply Instructions,'
 	header += 'Divide Instructions,'
 	header += 'Jump Instructions,'
+	header += 'No Operation (NOP) Instructions,'
 
 	header += 'Operations,'
 	outputFile.write(header + '\n')
@@ -62,7 +65,7 @@ if __name__ == '__main__':
 
 		totalOccurances = 0
 		categorizedOutputs = {}
-		categorizedIndividualInstructions = {'add': 0, 'subtract': 0, 'multiply': 0, 'divide': 0, 'jump': 0}
+		categorizedIndividualInstructions = {'add': 0, 'subtract': 0, 'multiply': 0, 'divide': 0, 'jump': 0, 'nop': 0}
 		for op in opcodes:
 			totalOccurances += opcodes[op]
 			category = None
@@ -122,6 +125,8 @@ if __name__ == '__main__':
 				categorizedIndividualInstructions['divide'] += opcodes[op]
 			elif op.upper() in jumpInstructions:
 				categorizedIndividualInstructions['jump'] += opcodes[op]
+			elif op.upper() in nopInstructions:
+				categorizedIndividualInstructions['nop'] += opcodes[op]
 
 		categorizedOutputs = dict(sorted(categorizedOutputs.items(), key=lambda item: item[1], reverse=True))
 		line = ''
@@ -138,6 +143,7 @@ if __name__ == '__main__':
 		line += str(categorizedIndividualInstructions['multiply']) + ','
 		line += str(categorizedIndividualInstructions['divide']) + ','
 		line += str(categorizedIndividualInstructions['jump']) + ','
+		line += str(categorizedIndividualInstructions['nop']) + ','
 
 		line += '"' + str(opcodes) + '",'
 		experimentData[experiment.lower()] += line + '\n'
