@@ -4,6 +4,16 @@ import re
 import json
 import sys
 
+addInstructions = ['ADC', 'ADCX', 'ADD', 'ADDPD', 'ADDPS', 'ADDSD', 'ADDSS', 'ADDSUBPD', 'ADDSUBPS', 'ADOX', 'BNDLDX', 'BNDSTX', 'FADD', 'FADDP', 'FIADD', 'HADDPD', 'HADDPS', 'KADDB', 'KADDD', 'KADDQ', 'KADDW', 'LEA', 'LOCK XADD', 'MONITOR', 'PADDB', 'PADDD', 'PADDQ', 'PADDSB', 'PADDSW', 'PADDUSB', 'PADDUSW', 'PADDW', 'PFADD', 'PHADDD', 'PHADDSW', 'PHADDW', 'PMADDUBSW', 'PMADDWD', 'TILELOADD', 'TILELOADDT1', 'UMONITOR', 'V4FMADDPS', 'V4FMADDSS', 'V4FNMADDPS', 'V4FNMADDSS', 'VADDPD', 'VADDPH', 'VADDPS', 'VADDSD', 'VADDSH', 'VADDSS', 'VADDSUBPD', 'VADDSUBPS', 'VFCMADDCPH', 'VFCMADDCSH', 'VFMADD132PD', 'VFMADD132PH', 'VFMADD132PS', 'VFMADD132SD', 'VFMADD132SH', 'VFMADD132SS', 'VFMADD213PD', 'VFMADD213PH', 'VFMADD213PS', 'VFMADD213SD', 'VFMADD213SH', 'VFMADD213SS', 'VFMADD231PD', 'VFMADD231PH', 'VFMADD231PS', 'VFMADD231SD', 'VFMADD231SH', 'VFMADD231SS', 'VFMADDCPH', 'VFMADDCSH', 'VFMADDPD', 'VFMADDPS', 'VFMADDSD', 'VFMADDSS', 'VFMADDSUB132PD', 'VFMADDSUB132PH', 'VFMADDSUB132PS', 'VFMADDSUB213PD', 'VFMADDSUB213PH', 'VFMADDSUB213PS', 'VFMADDSUB231PD', 'VFMADDSUB231PH', 'VFMADDSUB231PS', 'VFMADDSUBPD', 'VFMADDSUBPS', 'VFMSUBADD132PD', 'VFMSUBADD132PH', 'VFMSUBADD132PS', 'VFMSUBADD213PD', 'VFMSUBADD213PH', 'VFMSUBADD213PS', 'VFMSUBADD231PD', 'VFMSUBADD231PH', 'VFMSUBADD231PS', 'VFMSUBADDPD', 'VFMSUBADDPS', 'VFNMADD132PD', 'VFNMADD132PH', 'VFNMADD132PS', 'VFNMADD132SD', 'VFNMADD132SH', 'VFNMADD132SS', 'VFNMADD213PD', 'VFNMADD213PH', 'VFNMADD213PS', 'VFNMADD213SD', 'VFNMADD213SH', 'VFNMADD213SS', 'VFNMADD231PD', 'VFNMADD231PH', 'VFNMADD231PS', 'VFNMADD231SD', 'VFNMADD231SH', 'VFNMADD231SS', 'VFNMADDPD', 'VFNMADDPS', 'VFNMADDSD', 'VFNMADDSS', 'VHADDPD', 'VHADDPS', 'VPADDB', 'VPADDD', 'VPADDQ', 'VPADDSB', 'VPADDSW', 'VPADDUSB', 'VPADDUSW', 'VPADDW', 'VPHADDBD', 'VPHADDBQ', 'VPHADDBW', 'VPHADDD', 'VPHADDDQ', 'VPHADDSW', 'VPHADDUBD', 'VPHADDUBQ', 'VPHADDUBW', 'VPHADDUDQ', 'VPHADDUWD', 'VPHADDUWQ', 'VPHADDW', 'VPHADDWD', 'VPHADDWQ', 'VPMADD52HUQ', 'VPMADD52LUQ', 'VPMADDUBSW', 'VPMADDWD', 'XADD']
+
+subtractInstructions = ['ADDSUBPD', 'ADDSUBPS', 'FISUB', 'FISUBR', 'FSUB', 'FSUBP', 'FSUBR', 'FSUBRP', 'HSUBPD', 'HSUBPS', 'PHSUBD', 'PHSUBSW', 'PHSUBW', 'PSUBB', 'PSUBD', 'PSUBQ', 'PSUBSB', 'PSUBSW', 'PSUBUSB', 'PSUBUSW', 'PSUBW', 'SBB', 'SUB', 'SUBPD', 'SUBPS', 'SUBSD', 'SUBSS', 'VADDSUBPD', 'VADDSUBPS', 'VFMADDSUB132PD', 'VFMADDSUB132PS', 'VFMADDSUB213PD', 'VFMADDSUB213PS', 'VFMADDSUB231PD', 'VFMADDSUB231PS', 'VFMSUB132PD', 'VFMSUB132PS', 'VFMSUB132SD', 'VFMSUB132SS', 'VFMSUB213PD', 'VFMSUB213PS', 'VFMSUB213SD', 'VFMSUB213SS', 'VFMSUB231PD', 'VFMSUB231PS', 'VFMSUB231SD', 'VFMSUB231SS', 'VFMSUBADD132PD', 'VFMSUBADD132PS', 'VFMSUBADD213PD', 'VFMSUBADD213PS', 'VFMSUBADD231PD', 'VFMSUBADD231PS', 'VFNMSUB132PD', 'VFNMSUB132PS', 'VFNMSUB132SD', 'VFNMSUB132SS', 'VFNMSUB213PD', 'VFNMSUB213PS', 'VFNMSUB213SD', 'VFNMSUB213SS', 'VFNMSUB231PD', 'VFNMSUB231PS', 'VFNMSUB231SD', 'VFNMSUB231SS', 'VHSUBPD', 'VHSUBPS', 'VPHSUBD', 'VPHSUBSW', 'VPHSUBW', 'VPSUBB', 'VPSUBD', 'VPSUBQ', 'VPSUBSB', 'VPSUBSW', 'VPSUBUSB', 'VPSUBUSW', 'VPSUBW', 'VSUBPD', 'VSUBPS', 'VSUBSD', 'VSUBSS']
+
+multiplyInstructions = ['FIMUL', 'FMUL', 'FMULP', 'GF2P8MULB', 'IMUL', 'MUL', 'MULPD', 'MULPS', 'MULSD', 'MULSS', 'MULX', 'PMADDUBSW', 'PMADDWD', 'PMULDQ', 'PMULHRSW', 'PMULHUW', 'PMULHW', 'PMULLD', 'PMULLW', 'PMULUDQ', 'V4FMADDPS', 'V4FMADDSS', 'V4FNMADDPS', 'V4FNMADDSS', 'VFMADD132PD', 'VFMADD132PS', 'VFMADD132SD', 'VFMADD132SS', 'VFMADD213PD', 'VFMADD213PS', 'VFMADD213SD', 'VFMADD213SS', 'VFMADD231PD', 'VFMADD231PS', 'VFMADD231SD', 'VFMADD231SS', 'VFMADDSUB132PD', 'VFMADDSUB132PS', 'VFMADDSUB213PD', 'VFMADDSUB213PS', 'VFMADDSUB231PD', 'VFMADDSUB231PS', 'VFMSUB132PD', 'VFMSUB132PS', 'VFMSUB132SD', 'VFMSUB132SS', 'VFMSUB213PD', 'VFMSUB213PS', 'VFMSUB213SD', 'VFMSUB213SS', 'VFMSUB231PD', 'VFMSUB231PS', 'VFMSUB231SD', 'VFMSUB231SS', 'VFMSUBADD132PD', 'VFMSUBADD132PS', 'VFMSUBADD213PD', 'VFMSUBADD213PS', 'VFMSUBADD231PD', 'VFMSUBADD231PS', 'VFNMADD132PD', 'VFNMADD132PS', 'VFNMADD132SD', 'VFNMADD132SS', 'VFNMADD213PD', 'VFNMADD213PS', 'VFNMADD213SD', 'VFNMADD213SS', 'VFNMADD231PD', 'VFNMADD231PS', 'VFNMADD231SD', 'VFNMADD231SS', 'VFNMSUB132PD', 'VFNMSUB132PS', 'VFNMSUB132SD', 'VFNMSUB132SS', 'VFNMSUB213PD', 'VFNMSUB213PS', 'VFNMSUB213SD', 'VFNMSUB213SS', 'VFNMSUB231PD', 'VFNMSUB231PS', 'VFNMSUB231SD', 'VFNMSUB231SS', 'VGF2P8MULB', 'VMULPD', 'VMULPS', 'VMULSD', 'VMULSS', 'VPMADD52HUQ', 'VPMADD52LUQ', 'VPMADDUBSW', 'VPMADDWD', 'VPMULDQ', 'VPMULHRSW', 'VPMULHUW', 'VPMULHW', 'VPMULLD', 'VPMULLQ', 'VPMULLW', 'VPMULUDQ']
+
+divideInstructions = ['DIV', 'DIVPD', 'DIVPS', 'DIVSD', 'DIVSS', 'FDIV', 'FDIVP', 'FDIVR', 'FDIVRP', 'FIDIV', 'FIDIVR', 'IDIV', 'VDIVPD', 'VDIVPS', 'VDIVSD', 'VDIVSS']
+
+jumpInstructions = ['JB', 'JBE', 'JL', 'JLE', 'JMP', 'JNB', 'JNBE', 'JNL', 'JNLE', 'JNO', 'JNP', 'JNS', 'JNZ', 'JO', 'JP', 'JRCXZ', 'JS', 'JZ']
+
 if __name__ == '__main__':
 	# Construct the assembly --> category mapping using the dataset from https://uops.info/xml.html
 	categoryMap = {}
@@ -22,6 +32,13 @@ if __name__ == '__main__':
 	header += 'Arithmetic and Logic Instructions,'
 	header += 'Control Flow Instructions,'
 	header += 'Miscellaneous Instructions,'
+
+	header += 'Addition Instructions,'
+	header += 'Subtraction Instructions,'
+	header += 'Multiply Instructions,'
+	header += 'Divide Instructions,'
+	header += 'Jump Instructions,'
+
 	header += 'Operations,'
 	outputFile.write(header + '\n')
 
@@ -45,6 +62,7 @@ if __name__ == '__main__':
 
 		totalOccurances = 0
 		categorizedOutputs = {}
+		categorizedIndividualInstructions = {'add': 0, 'subtract': 0, 'multiply': 0, 'divide': 0, 'jump': 0}
 		for op in opcodes:
 			totalOccurances += opcodes[op]
 			category = None
@@ -94,6 +112,17 @@ if __name__ == '__main__':
 			else:
 				categorizedOutputs[category] += opcodes[op]
 
+			if op.upper() in addInstructions:
+				categorizedIndividualInstructions['add'] += opcodes[op]
+			elif op.upper() in subtractInstructions:
+				categorizedIndividualInstructions['subtract'] += opcodes[op]
+			elif op.upper() in multiplyInstructions:
+				categorizedIndividualInstructions['multiply'] += opcodes[op]
+			elif op.upper() in divideInstructions:
+				categorizedIndividualInstructions['divide'] += opcodes[op]
+			elif op.upper() in jumpInstructions:
+				categorizedIndividualInstructions['jump'] += opcodes[op]
+
 		categorizedOutputs = dict(sorted(categorizedOutputs.items(), key=lambda item: item[1], reverse=True))
 		line = ''
 		line += algorithm + ','
@@ -103,6 +132,13 @@ if __name__ == '__main__':
 		line += str(categorizedOutputs['Arithmetic and Logic Instructions']) + ','
 		line += str(categorizedOutputs['Control Flow Instructions']) + ','
 		line += str(categorizedOutputs['Miscellaneous Instructions']) + ','
+
+		line += str(categorizedIndividualInstructions['add']) + ','
+		line += str(categorizedIndividualInstructions['subtract']) + ','
+		line += str(categorizedIndividualInstructions['multiply']) + ','
+		line += str(categorizedIndividualInstructions['divide']) + ','
+		line += str(categorizedIndividualInstructions['jump']) + ','
+
 		line += '"' + str(opcodes) + '",'
 		experimentData[experiment.lower()] += line + '\n'
 
