@@ -52,12 +52,16 @@ if __name__ == '__main__':
 	header = next(reader)
 	baselineRow = next(reader)
 	assert baselineRow[1] == 'N/A', 'The initial baseline row was not found'
-	baselineJSON = json.loads(baselineRow[2].replace("'", '"'))
+	baselineJSON = json.loads(baselineRow[6].replace("'", '"'))
 	for row in reader:
 		algorithm = row[0]
 		experiment = row[1]
-		print(row[2].replace("'", '"'))
-		opcodes = json.loads(row[2].replace("'", '"'))
+		print('Processing', algorithm, experiment, '...')
+		lineStart = row[2]
+		lineEnd = row[3]
+		addressStart = row[4]
+		addressEnd = row[5]
+		opcodes = json.loads(row[6].replace("'", '"'))
 		# First, we remove any baseline data, since this contains the assembly instructions executed when no code is present
 		for key in baselineJSON:
 			if key in opcodes:
@@ -147,6 +151,7 @@ if __name__ == '__main__':
 
 		line += '"' + str(opcodes) + '",'
 		experimentData[experiment.lower()] += line + '\n'
+		print('   ', categorizedOutputs)
 
 	outputFile.write(experimentData['key generation'])
 	outputFile.write(experimentData['signing'])
