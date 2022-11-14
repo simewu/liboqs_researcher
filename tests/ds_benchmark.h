@@ -135,11 +135,22 @@ static uint64_t _bench_rdtsc(void) {
 	__asm__ volatile("mrc p15, 0, %0, c9, c13, 0\t\n"
 	                 : "=r"(value));
 	return value;
+#elif defined(SPEED_USE_ARM_PMU)
+	/* Use the Performance Monitoring Unit */
+	uint64_t value;
+	/* Read the PMU register */
+	__asm__ volatile("mrs %0, PMCCNTR_EL0" : "=r" (value));
+	return value;
+#elif defined(__s390x__)
+#define USING_TIME_RATHER_THAN_CYCLES
+	uint64_t tod;
+	__asm__ volatile("stckf %0\n" : "=Q" (tod) : : "cc");
+	return (tod * 1000 / 4096);
 #else
 #define USING_TIME_RATHER_THAN_CYCLES
 	struct timespec time;
 	clock_gettime(CLOCK_REALTIME, &time);
-	return (uint64_t)(time.tv_sec * 1e9 + time.tv_nsec);
+	return (uint64_t)((double)time.tv_sec * 1e9 + (double)time.tv_nsec);
 #endif
 }
 
@@ -169,6 +180,20 @@ static void _bench_init_perfcounters(int32_t do_reset, int32_t enable_divider) {
 	/* Clear overflows */
 	__asm__ volatile("mcr p15, 0, %0, c9, c12, 3\t\n" ::"r"(0x8000000f));
 }
+#elif defined(SPEED_USE_ARM_PMU)
+
+/* Enabling access to ARMv8's Performance Monitoring Unit
+ * cannot be done from user mode. A kernel module to
+ * enable access must be loaded. This generally will
+ * require superuser permissions. A module that has
+ * been found to work on some platforms can be found at
+ * https://github.com/mupq/pqax#enable-access-to-performance-counters
+ */
+
+static void _bench_init_perfcounters(void) {
+	__asm__ volatile("MSR PMCR_EL0, %0" ::"r"(1));
+	__asm__ volatile("MSR PMCNTENSET_EL0, %0" ::"r"(0x80000000));
+}
 #endif
 
 #define DEFINE_TIMER_VARIABLES                                                                              \
@@ -188,6 +213,15 @@ static void _bench_init_perfcounters(int32_t do_reset, int32_t enable_divider) {
     _bench_cycles_M2 = 0.0;         \
     _bench_time_cumulative = 0;     \
     _bench_time_mean = 0.0;         \
+    _bench_time_M2 = 0.0;
+#elif defined(SPEED_USE_ARM_PMU)
+#define INITIALIZE_TIMER        \
+    _bench_init_perfcounters(); \
+    _bench_iterations = 0;      \
+    _bench_cycles_mean = 0.0;   \
+    _bench_cycles_M2 = 0.0;     \
+    _bench_time_cumulative = 0; \
+    _bench_time_mean = 0.0;     \
     _bench_time_M2 = 0.0;
 #else
 #define INITIALIZE_TIMER        \
@@ -220,19 +254,19 @@ static void _bench_init_perfcounters(int32_t do_reset, int32_t enable_divider) {
     _bench_cycles_delta = _bench_cycles_x - _bench_cycles_mean;                                                                                                             \
     _bench_cycles_mean += _bench_cycles_delta / (double) _bench_iterations;                                                                                                 \
     _bench_cycles_M2 += _bench_cycles_delta * (_bench_cycles_x - _bench_cycles_mean);                                                                                       \
-    _bench_time_x = (double) ((_bench_timeval_end.tv_sec * 1000000 + _bench_timeval_end.tv_usec) - (_bench_timeval_start.tv_sec * 1000000 + _bench_timeval_start.tv_usec)); \
+    _bench_time_x = (double) ((((uint64_t) _bench_timeval_end.tv_sec) * 1000000 + (uint64_t) _bench_timeval_end.tv_usec) - (((uint64_t) _bench_timeval_start.tv_sec) * 1000000 + (uint64_t) _bench_timeval_start.tv_usec)); \
     _bench_time_delta = _bench_time_x - _bench_time_mean;                                                                                                                   \
     _bench_time_mean += _bench_time_delta / (double) _bench_iterations;                                                                                                     \
     _bench_time_M2 += _bench_time_delta * (_bench_time_x - _bench_time_mean);                                                                                               \
     _bench_time_cumulative += (uint64_t) _bench_time_x;
 
 #define FINALIZE_TIMER                                                             \
-    if (_bench_iterations == 2) {                                                  \
+    if (_bench_iterations < 2) {                                                   \
         _bench_cycles_stdev = 0.0;                                                 \
     } else {                                                                       \
         _bench_cycles_stdev = sqrt(_bench_cycles_M2 / (double) _bench_iterations); \
     }                                                                              \
-    if (_bench_iterations == 2) {                                                  \
+    if (_bench_iterations < 2) {                                                   \
         _bench_time_stdev = 0.0;                                                   \
     } else {                                                                       \
         _bench_time_stdev = sqrt(_bench_time_M2 / (double) _bench_iterations);     \
@@ -256,8 +290,8 @@ static void _bench_init_perfcounters(int32_t do_reset, int32_t enable_divider) {
     printf("Started at ");                                                                                                                                                                          \
     PRINT_CURRENT_TIME                                                                                                                                                                              \
     printf("\n");                                                                                                                                                                                   \
-    printf("%-30s | %10s | %14s | %15s | %10s | %25s | %10s\n", "Operation                     ", "Iterations", "Total time (s)", "Time (us): mean", "pop. stdev", HIGH_PREC_HEADER, "pop. stdev"); \
-    printf("%-30s | %10s:| %14s:| %15s:| %10s:| %25s:| %10s:\n", "------------------------------", "----------", "--------------", "---------------", "----------", "-------------------------", "----------");
+    printf("%-36s | %10s | %14s | %15s | %10s | %25s | %10s\n", "Operation                           ", "Iterations", "Total time (s)", "Time (us): mean", "pop. stdev", HIGH_PREC_HEADER, "pop. stdev"); \
+    printf("%-36s | %10s:| %14s:| %15s:| %10s:| %25s:| %10s:\n", "------------------------------------", "----------", "--------------", "---------------", "----------", "-------------------------", "----------");
 /* colons are used in above to right-align cell contents in Markdown */
 
 #define PRINT_TIMER_FOOTER \
@@ -266,7 +300,7 @@ static void _bench_init_perfcounters(int32_t do_reset, int32_t enable_divider) {
     printf("\n");
 
 #define PRINT_TIMER_AVG(op_name) \
-    printf("%-30s | %10" PRIu64 " | %14.3f | %15.3f | %10.3f | %25.0f | %10.0f\n", (op_name), _bench_iterations, ((double) _bench_time_cumulative) / 1000000.0, _bench_time_mean, _bench_time_stdev, ((double) _bench_cycles_cumulative) / (double) _bench_iterations, _bench_cycles_stdev);
+    printf("%-36s | %10" PRIu64 " | %14.3f | %15.3f | %10.3f | %25.0f | %10.0f\n", (op_name), _bench_iterations, ((double) _bench_time_cumulative) / 1000000.0, _bench_time_mean, _bench_time_stdev, ((double) _bench_cycles_cumulative) / (double) _bench_iterations, _bench_cycles_stdev);
 
 #define TIME_OPERATION_ITERATIONS(op, op_name, it) \
     {                                              \

@@ -19,7 +19,6 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
                       const picnic_instance_t* params) {
 
 #define mpc_sbox CONCAT(picnic3_mpc_sbox, CONCAT(IMPL, LOWMC_INSTANCE))
-  int ret = 0;
   mzd_local_t state[(LOWMC_N + 255) / 256];
   mzd_local_t temp[(LOWMC_N + 255) / 256];
 
@@ -38,20 +37,25 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   }
 
   /* check that the output is correct */
-  uint8_t output[MAX_LOWMC_BLOCK_SIZE];
-  mzd_to_char_array(output, state, params->output_size);
+  uint8_t output[MAX_LOWMC_BLOCK_SIZE] = {0};
+  mzd_to_char_array(output, state, params->input_output_size);
 
-  if (picnic_timingsafe_bcmp(output, pubKey, params->output_size) != 0) {
+  /* timingsafe_bcmp is not strictly necessary here. The comparison does not leak
+   * any information on the secret key. Also, the result is fine to be leaked as
+   * it essentially only conveys the information whether the public key stored in
+   * the secret key is consistent. */
+  const int ret = picnic_timingsafe_bcmp(output, pubKey, params->input_output_size);
+  picnic_declassify(&ret, sizeof(ret));
 #if !defined(NDEBUG)
+  if (ret) {
     printf("%s: output does not match pubKey\n", __func__);
     printf("pubKey: ");
-    print_hex(stdout, pubKey, params->output_size);
+    print_hex(stdout, pubKey, params->input_output_size);
     printf("\noutput: ");
-    print_hex(stdout, output, params->output_size);
+    print_hex(stdout, output, params->input_output_size);
     printf("\n");
-#endif
-    ret = -1;
   }
+#endif
   return ret;
 }
 #endif

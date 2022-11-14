@@ -15,7 +15,10 @@ if(NOT WIN32)
 else()
     option(OQS_USE_OPENSSL "Enable OpenSSL usage" OFF)
 endif()
-cmake_dependent_option(OQS_USE_AES_OPENSSL "" ON "OQS_USE_OPENSSL" OFF)
+
+# Use OpenSSL's AES only if no AESNI and x86 dist build is used.
+# Reason: AESNI implementation better fits our incremental API.
+cmake_dependent_option(OQS_USE_AES_OPENSSL "" ON "OQS_USE_OPENSSL; NOT OQS_DIST_X86_64_BUILD; NOT OQS_USE_AES_INSTRUCTIONS" OFF)
 cmake_dependent_option(OQS_USE_SHA2_OPENSSL "" ON "OQS_USE_OPENSSL" OFF)
 # Disable OpenSSL's SHA3 by default. The implementation is not complete
 # enough to support our incremental API.
@@ -27,8 +30,12 @@ if(OQS_DIST_X86_64_BUILD OR OQS_USE_AVX2_INSTRUCTIONS)
 endif()
 endif()
 
-# BIKE is not supported on Windows and 32-bit ARM
-cmake_dependent_option(OQS_ENABLE_KEM_BIKE "Enable BIKE algorithm family" ON "NOT WIN32; NOT ARCH_ARM32v7; NOT ARCH_X86" OFF)
+# BIKE is not supported on Windows, 32-bit ARM, S390X (big endian) and PPC64 (big endian)
+cmake_dependent_option(OQS_ENABLE_KEM_BIKE "Enable BIKE algorithm family" ON "NOT WIN32; NOT ARCH_ARM32v7; NOT ARCH_X86; NOT ARCH_S390X; NOT ARCH_PPC64" OFF)
+# BIKE doesn't work on any 32bit platform except x86:
+if(CMAKE_SIZEOF_VOID_P MATCHES "4" AND NOT ARCH_X86)
+set(OQS_ENABLE_KEM_BIKE OFF)
+endif()
 cmake_dependent_option(OQS_ENABLE_KEM_bike_l1 "" ON "OQS_ENABLE_KEM_BIKE" OFF)
 cmake_dependent_option(OQS_ENABLE_KEM_bike_l3 "" ON "OQS_ENABLE_KEM_BIKE" OFF)
 
@@ -39,26 +46,6 @@ cmake_dependent_option(OQS_ENABLE_KEM_frodokem_976_aes "" ON "OQS_ENABLE_KEM_FRO
 cmake_dependent_option(OQS_ENABLE_KEM_frodokem_976_shake "" ON "OQS_ENABLE_KEM_FRODOKEM" OFF)
 cmake_dependent_option(OQS_ENABLE_KEM_frodokem_1344_aes "" ON "OQS_ENABLE_KEM_FRODOKEM" OFF)
 cmake_dependent_option(OQS_ENABLE_KEM_frodokem_1344_shake "" ON "OQS_ENABLE_KEM_FRODOKEM" OFF)
-
-option(OQS_ENABLE_KEM_SIKE "Enable SIKE algorithm family" ON)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p434 "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p434_compressed "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p503 "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p503_compressed "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p610 "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p610_compressed "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p751 "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sike_p751_compressed "" ON "OQS_ENABLE_KEM_SIKE" OFF)
-
-option(OQS_ENABLE_KEM_SIDH "Enable SIDH algorithm family" ON)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p434 "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p434_compressed "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p503 "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p503_compressed "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p610 "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p610_compressed "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p751 "" ON "OQS_ENABLE_KEM_SIDH" OFF)
-cmake_dependent_option(OQS_ENABLE_KEM_sidh_p751_compressed "" ON "OQS_ENABLE_KEM_SIDH" OFF)
 
 option(OQS_ENABLE_SIG_PICNIC "Enable Picnic algorithm family" ON)
 cmake_dependent_option(OQS_ENABLE_SIG_picnic_L1_UR "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
@@ -73,6 +60,16 @@ cmake_dependent_option(OQS_ENABLE_SIG_picnic_L5_full "" ON "OQS_ENABLE_SIG_PICNI
 cmake_dependent_option(OQS_ENABLE_SIG_picnic3_L1 "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_picnic3_L3 "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_picnic3_L5 "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
+
+if((OQS_DIST_X86_64_BUILD OR OQS_USE_SSE2_INSTRUCTIONS) AND NOT CYGWIN)
+    cmake_dependent_option(OQS_ENABLE_SIG_picnic_sse2 "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
+endif()
+if((OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCTIONS)) AND NOT CYGWIN)
+    cmake_dependent_option(OQS_ENABLE_SIG_picnic_avx2 "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
+endif()
+if((OQS_DIST_ARM64_V8_BUILD OR OQS_USE_ARM_NEON_INSTRUCTIONS) AND NOT CYGWIN)
+    cmake_dependent_option(OQS_ENABLE_SIG_picnic_neon "" ON "OQS_ENABLE_SIG_PICNIC" OFF)
+endif()
 
 ##### OQS_COPY_FROM_UPSTREAM_FRAGMENT_ADD_ENABLE_BY_ALG_START
 option(OQS_ENABLE_KEM_CLASSIC_MCELIECE "Enable classic_mceliece algorithm family" ON)
@@ -178,6 +175,16 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCT
 endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_kyber_512_aarch64 "" ON "OQS_ENABLE_KEM_kyber_512" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
+endif()
+endif()
+
 cmake_dependent_option(OQS_ENABLE_KEM_kyber_768 "" ON "OQS_ENABLE_KEM_KYBER" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRUCTIONS))
@@ -185,10 +192,30 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCT
 endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_kyber_768_aarch64 "" ON "OQS_ENABLE_KEM_kyber_768" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
+endif()
+endif()
+
 cmake_dependent_option(OQS_ENABLE_KEM_kyber_1024 "" ON "OQS_ENABLE_KEM_KYBER" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_KEM_kyber_1024_avx2 "" ON "OQS_ENABLE_KEM_kyber_1024" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_kyber_1024_aarch64 "" ON "OQS_ENABLE_KEM_kyber_1024" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
 endif()
 endif()
 
@@ -236,6 +263,7 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCT
 endif()
 endif()
 
+cmake_dependent_option(OQS_ENABLE_KEM_ntru_hps40961229 "" ON "OQS_ENABLE_KEM_NTRU" OFF)
 cmake_dependent_option(OQS_ENABLE_KEM_ntru_hrss701 "" ON "OQS_ENABLE_KEM_NTRU" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCTIONS))
@@ -243,6 +271,7 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_BMI2_INSTRUCT
 endif()
 endif()
 
+cmake_dependent_option(OQS_ENABLE_KEM_ntru_hrss1373 "" ON "OQS_ENABLE_KEM_NTRU" OFF)
 
 option(OQS_ENABLE_KEM_NTRUPRIME "Enable ntruprime algorithm family" ON)
 cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_ntrulpr653 "" ON "OQS_ENABLE_KEM_NTRUPRIME" OFF)
@@ -263,6 +292,13 @@ cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_ntrulpr857 "" ON "OQS_ENABLE_KEM
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_ntrulpr857_avx2 "" ON "OQS_ENABLE_KEM_ntruprime_ntrulpr857" OFF)
+endif()
+endif()
+
+cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_ntrulpr1277 "" ON "OQS_ENABLE_KEM_NTRUPRIME" OFF)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_ntrulpr1277_avx2 "" ON "OQS_ENABLE_KEM_ntruprime_ntrulpr1277" OFF)
 endif()
 endif()
 
@@ -287,12 +323,29 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
 endif()
 endif()
 
+cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_sntrup1277 "" ON "OQS_ENABLE_KEM_NTRUPRIME" OFF)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_KEM_ntruprime_sntrup1277_avx2 "" ON "OQS_ENABLE_KEM_ntruprime_sntrup1277" OFF)
+endif()
+endif()
+
 
 option(OQS_ENABLE_KEM_SABER "Enable saber algorithm family" ON)
 cmake_dependent_option(OQS_ENABLE_KEM_saber_lightsaber "" ON "OQS_ENABLE_KEM_SABER" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_KEM_saber_lightsaber_avx2 "" ON "OQS_ENABLE_KEM_saber_lightsaber" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_saber_lightsaber_aarch64 "" ON "OQS_ENABLE_KEM_saber_lightsaber" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
 endif()
 endif()
 
@@ -303,10 +356,30 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
 endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_saber_saber_aarch64 "" ON "OQS_ENABLE_KEM_saber_saber" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
+endif()
+endif()
+
 cmake_dependent_option(OQS_ENABLE_KEM_saber_firesaber "" ON "OQS_ENABLE_KEM_SABER" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_KEM_saber_firesaber_avx2 "" ON "OQS_ENABLE_KEM_saber_firesaber" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if((OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS)))
+if(((CMAKE_C_COMPILER_ID STREQUAL "GNU") AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.4.0")) OR ((NOT (CMAKE_C_COMPILER_ID STREQUAL "GNU")) AND (NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))))
+    cmake_dependent_option(OQS_ENABLE_KEM_saber_firesaber_aarch64 "" ON "OQS_ENABLE_KEM_saber_firesaber" OFF)
+else()
+    message(WARNING "  ARM optimizations are not fully supported on this compiler version.")
+endif()
 endif()
 endif()
 
@@ -319,6 +392,12 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRU
 endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if(OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_SIG_dilithium_2_aarch64 "" ON "OQS_ENABLE_SIG_dilithium_2" OFF)
+endif()
+endif()
+
 cmake_dependent_option(OQS_ENABLE_SIG_dilithium_3 "" ON "OQS_ENABLE_SIG_DILITHIUM" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin|Linux")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRUCTIONS))
@@ -326,10 +405,22 @@ if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRU
 endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if(OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_SIG_dilithium_3_aarch64 "" ON "OQS_ENABLE_SIG_dilithium_3" OFF)
+endif()
+endif()
+
 cmake_dependent_option(OQS_ENABLE_SIG_dilithium_5 "" ON "OQS_ENABLE_SIG_DILITHIUM" OFF)
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin|Linux")
 if(OQS_DIST_X86_64_BUILD OR (OQS_USE_AVX2_INSTRUCTIONS AND OQS_USE_POPCNT_INSTRUCTIONS))
     cmake_dependent_option(OQS_ENABLE_SIG_dilithium_5_avx2 "" ON "OQS_ENABLE_SIG_dilithium_5" OFF)
+endif()
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
+if(OQS_DIST_ARM64_V8_BUILD OR (OQS_USE_ARM_NEON_INSTRUCTIONS AND OQS_USE_ARM_NEON_INSTRUCTIONS))
+    cmake_dependent_option(OQS_ENABLE_SIG_dilithium_5_aarch64 "" ON "OQS_ENABLE_SIG_dilithium_5" OFF)
 endif()
 endif()
 
@@ -372,9 +463,6 @@ endif()
 
 
 option(OQS_ENABLE_SIG_RAINBOW "Enable rainbow algorithm family" ON)
-cmake_dependent_option(OQS_ENABLE_SIG_rainbow_I_classic "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
-cmake_dependent_option(OQS_ENABLE_SIG_rainbow_I_circumzenithal "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
-cmake_dependent_option(OQS_ENABLE_SIG_rainbow_I_compressed "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_rainbow_III_classic "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_rainbow_III_circumzenithal "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
 cmake_dependent_option(OQS_ENABLE_SIG_rainbow_III_compressed "" ON "OQS_ENABLE_SIG_RAINBOW" OFF)
@@ -597,6 +685,7 @@ if(NOT ((OQS_MINIMAL_BUILD STREQUAL "") OR (OQS_MINIMAL_BUILD STREQUAL "OFF")))
           string(REPLACE "_aesni" "" _var_base ${_var})
           string(REPLACE "_avx2" "" _var_base ${_var_base})
           string(REPLACE "_avx" "" _var_base ${_var_base})
+          string(REPLACE "_aarch64" "" _var_base ${_var_base})
           foreach (_alg ${OQS_MINIMAL_BUILD})
             if(${_var}_AVAILABLE)
               if(${_var_base}X STREQUAL ${_alg}X)

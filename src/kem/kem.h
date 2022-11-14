@@ -80,20 +80,28 @@ extern "C" {
 #define OQS_KEM_alg_ntru_hps2048677 "NTRU-HPS-2048-677"
 /** Algorithm identifier for NTRU-HPS-4096-821 KEM. */
 #define OQS_KEM_alg_ntru_hps4096821 "NTRU-HPS-4096-821"
+/** Algorithm identifier for NTRU-HPS-4096-1229 KEM. */
+#define OQS_KEM_alg_ntru_hps40961229 "NTRU-HPS-4096-1229"
 /** Algorithm identifier for NTRU-HRSS-701 KEM. */
 #define OQS_KEM_alg_ntru_hrss701 "NTRU-HRSS-701"
+/** Algorithm identifier for NTRU-HRSS-1373 KEM. */
+#define OQS_KEM_alg_ntru_hrss1373 "NTRU-HRSS-1373"
 /** Algorithm identifier for ntrulpr653 KEM. */
 #define OQS_KEM_alg_ntruprime_ntrulpr653 "ntrulpr653"
 /** Algorithm identifier for ntrulpr761 KEM. */
 #define OQS_KEM_alg_ntruprime_ntrulpr761 "ntrulpr761"
 /** Algorithm identifier for ntrulpr857 KEM. */
 #define OQS_KEM_alg_ntruprime_ntrulpr857 "ntrulpr857"
+/** Algorithm identifier for ntrulpr1277 KEM. */
+#define OQS_KEM_alg_ntruprime_ntrulpr1277 "ntrulpr1277"
 /** Algorithm identifier for sntrup653 KEM. */
 #define OQS_KEM_alg_ntruprime_sntrup653 "sntrup653"
 /** Algorithm identifier for sntrup761 KEM. */
 #define OQS_KEM_alg_ntruprime_sntrup761 "sntrup761"
 /** Algorithm identifier for sntrup857 KEM. */
 #define OQS_KEM_alg_ntruprime_sntrup857 "sntrup857"
+/** Algorithm identifier for sntrup1277 KEM. */
+#define OQS_KEM_alg_ntruprime_sntrup1277 "sntrup1277"
 /** Algorithm identifier for LightSaber-KEM KEM. */
 #define OQS_KEM_alg_saber_lightsaber "LightSaber-KEM"
 /** Algorithm identifier for Saber-KEM KEM. */
@@ -113,42 +121,10 @@ extern "C" {
 #define OQS_KEM_alg_frodokem_1344_aes "FrodoKEM-1344-AES"
 /** Algorithm identifier for FrodoKEM-1344-SHAKE KEM. */
 #define OQS_KEM_alg_frodokem_1344_shake "FrodoKEM-1344-SHAKE"
-/** Algorithm identifier for SIDH p434 KEM. */
-#define OQS_KEM_alg_sidh_p434 "SIDH-p434"
-/** Algorithm identifier for SIDH p434 compressed KEM. */
-#define OQS_KEM_alg_sidh_p434_compressed "SIDH-p434-compressed"
-/** Algorithm identifier for SIDH p503 KEM. */
-#define OQS_KEM_alg_sidh_p503 "SIDH-p503"
-/** Algorithm identifier for SIDH p503 compressed KEM. */
-#define OQS_KEM_alg_sidh_p503_compressed "SIDH-p503-compressed"
-/** Algorithm identifier for SIDH p610 KEM. */
-#define OQS_KEM_alg_sidh_p610 "SIDH-p610"
-/** Algorithm identifier for SIDH p610 compressed KEM. */
-#define OQS_KEM_alg_sidh_p610_compressed "SIDH-p610-compressed"
-/** Algorithm identifier for SIDH p751 KEM. */
-#define OQS_KEM_alg_sidh_p751 "SIDH-p751"
-/** Algorithm identifier for SIDH p751 compressed KEM. */
-#define OQS_KEM_alg_sidh_p751_compressed "SIDH-p751-compressed"
-/** Algorithm identifier for SIKE p434 KEM. */
-#define OQS_KEM_alg_sike_p434 "SIKE-p434"
-/** Algorithm identifier for SIKE p434 compressed KEM. */
-#define OQS_KEM_alg_sike_p434_compressed "SIKE-p434-compressed"
-/** Algorithm identifier for SIKE p503 KEM. */
-#define OQS_KEM_alg_sike_p503 "SIKE-p503"
-/** Algorithm identifier for SIKE p503 compressed KEM. */
-#define OQS_KEM_alg_sike_p503_compressed "SIKE-p503-compressed"
-/** Algorithm identifier for SIKE p610 KEM. */
-#define OQS_KEM_alg_sike_p610 "SIKE-p610"
-/** Algorithm identifier for SIKE p610 compressed KEM. */
-#define OQS_KEM_alg_sike_p610_compressed "SIKE-p610-compressed"
-/** Algorithm identifier for SIKE p751 KEM. */
-#define OQS_KEM_alg_sike_p751 "SIKE-p751"
-/** Algorithm identifier for SIKE p751 compressed KEM. */
-#define OQS_KEM_alg_sike_p751_compressed "SIKE-p751-compressed"
 // EDIT-WHEN-ADDING-KEM
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_START
 /** Number of algorithm identifiers above. */
-#define OQS_KEM_algs_length 56
+#define OQS_KEM_algs_length 44
 ///// OQS_COPY_FROM_UPSTREAM_FRAGMENT_ALGS_LENGTH_END
 
 /**
@@ -342,12 +318,6 @@ OQS_API void OQS_KEM_free(OQS_KEM *kem);
 #ifdef OQS_ENABLE_KEM_FRODOKEM
 #include <oqs/kem_frodokem.h>
 #endif /* OQS_ENABLE_KEM_FRODOKEM */
-#ifdef OQS_ENABLE_KEM_SIKE
-#include <oqs/kem_sike.h>
-#endif /* OQS_ENABLE_KEM_SIKE */
-#ifdef OQS_ENABLE_KEM_SIDH
-#include <oqs/kem_sike.h>
-#endif /* OQS_ENABLE_KEM_SIDH */
 // EDIT-WHEN-ADDING-KEM
 
 #if defined(__cplusplus)

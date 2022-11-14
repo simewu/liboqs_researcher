@@ -45,10 +45,16 @@ if(NOT WIN32)
     add_executable(test_sha3 test_sha3.c ${COMMON_OBJS})
     target_link_libraries(test_sha3 PRIVATE ${INTERNAL_TEST_DEPS})
 
+    add_executable(speed_common speed_common.c ${COMMON_OBJS})
+    target_link_libraries(speed_common PRIVATE ${INTERNAL_TEST_DEPS})
+
     set(UNIX_TESTS test_aes test_hash test_sha3)
 
     set(PYTHON3_EXEC python3)
 else()
+    if(OQS_USE_OPENSSL)
+        include_directories(${OPENSSL_INCLUDE_DIR})
+    endif()
     set(PYTHON3_EXEC python)
 endif()
 
@@ -112,7 +118,7 @@ add_definitions(-DOQS_COMPILE_OPTIONS="[${OQS_COMPILE_OPTIONS}]")
 # for DLL builds.
 add_custom_target(
     run_tests
-    COMMAND ${CMAKE_COMMAND} -E env OQS_BUILD_DIR=${CMAKE_BINARY_DIR} ${PYTHON3_EXEC} -m pytest --verbose --numprocesses=auto
+    COMMAND ${CMAKE_COMMAND} -E env OQS_BUILD_DIR=${CMAKE_BINARY_DIR} ${PYTHON3_EXEC} -m pytest --verbose --numprocesses=auto --ignore=scripts/copy_from_upstream/repos
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS oqs example_kem kat_kem test_kem example_sig kat_sig test_sig test_sig_mem test_kem_mem ${UNIX_TESTS}
     USES_TERMINAL)
